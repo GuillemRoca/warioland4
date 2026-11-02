@@ -28,22 +28,29 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   d'objectes i de la botiga de minijocs, i "SENSE DADES" a la selecció d'arxiu.
   S'hi han afegit les lletres `à è é í ï ò ó ú ü ç · ,`.
 - **Gràfics amb text** (`graphics_ca.toml`):
-  - pantalla de títol (PREM START) i diari i subtítols de la introducció;
+  - pantalla de títol (PREM START);
+  - introducció: titular, text i subtítol del diari, i subtítol del cartell de
+    bistecs de la segona variant;
   - selecció d'arxiu (ARXIU, ESBORRAR, SURT, Difícil, Extrem);
   - pantalla d'esborrar dades i els seus diàlegs;
   - pausa (TORNA / SURT / ABANDONA, MÀX i els dos diàlegs);
   - avís de desat després del primer nivell;
   - botigues, Sala de So i minijocs (SURT, MENÚ, REGAL, 1 JOC, MÀX, MIRA);
-  - capçaleres i nota de drets d'autor dels crèdits.
+  - capçaleres i nota de drets d'autor dels crèdits;
+  - final del joc ("Gràcies, WARIO...").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
 Es mantenen en l'original els noms propis (Wario, Nintendo, el personal dels
 crèdits), la lletra del karaoke (japonès romanitzat), els termes de beisbol
 (STRIKE) i "START" com a nom de botó.
 
-**Pendent:** el text petit del cos del diari de la introducció, el gràfic
-"TIME UP" (quan s'acaba el compte enrere) i el cartell "STEAKS!" de la seqüència
-d'atracció continuen en anglès.
+**Pendent:** continuen en anglès el gràfic "TIME UP" (quan s'acaba el temps
+d'un cap), les lletres dibuixades del cartell "STEAKS! $10" (el subtítol que
+l'acompanya sí que està traduït) i el petit logotip "mini GAME" de la
+previsualització de la botiga de minijocs. També es mantenen "Nintendo
+Presents" i "© 2001 Nintendo". Alguns gràfics sense ús a la versió
+USA/Europa (selector d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press
+PUSH") no s'han tocat.
 
 ## Regenerar el pedaç
 

@@ -150,6 +150,17 @@ tiles, amb espai limitat.
 
 La lletra del karaoke (en japonès romanitzat) no es tradueix.
 
+## Introducció i final
+
+| Anglès | Català | Notes |
+|---|---|---|
+| PYRAMID DISCOVERED | PIRÀMIDE TROBADA | Titular del diari *(gràfic)* |
+| Legendary treasure nearly found, but accidents hindered findings | Tresor llegendari gairebé trobat, però hi ha hagut accidents | Cos del diari *(gràfic)* |
+| LEGENDARY PYRAMID DISCOVERED DEEP IN JUNGLE!! | PIRÀMIDE LLEGENDÀRIA TROBADA DINS LA JUNGLA!! | Subtítol (28 + 16 caràcters) |
+| STEAKS! EAT AS MUCH AS YOU CAN!! | BISTECS! MENJA'N A DOJO!! | Subtítol (22 + 9 caràcters) |
+| Thank you, WARIO... | Gràcies, WARIO... | Final del joc |
+| Your game is always saved when you go back to a passage. | Sempre que tornes a un passadís, es desa la partida. | Avís després del primer nivell |
+
 ## Crèdits
 
 | Anglès | Català |

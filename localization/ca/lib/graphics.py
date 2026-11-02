@@ -683,6 +683,21 @@ def small_labels(rom, texts):
                 sh.set(x, y, checkerboard(x, y))
         put_mask(sh, m, (24 - len(m[0])) // 2, 0, 3)
 
+    # Home-run derby: the same TOP label rotated 90 degrees (reads bottom to top),
+    # an 8x24 strip at x=32, y=80 of the BG sheet 0x7210E4 (tiles 0x144/0x164/0x184)
+    sh = Sheet(rom, 0x7210E4, 32, 16)
+    horiz = [[0] * 24 for _ in range(8)]
+    m = f.CAPS8.mask(best)
+    x0 = (24 - len(m[0])) // 2
+    for y, row in enumerate(m):
+        for x, v in enumerate(row):
+            horiz[y][x0 + x] = v
+    for vy in range(24):
+        for vx in range(8):
+            ink = horiz[vx][23 - vy]
+            bgc = 11 if (((vx + 1) // 2) + ((80 + vy) // 2)) % 2 == 0 else 10
+            sh.set(32 + vx, 80 + vy, 3 if ink else bgc)
+
     # Roulette "LOOK" sign (OBJ sheet 0x6FC4E8 - 0x56 tiles, 40x16 at sheet x=176, y=16)
     sh = Sheet(rom, 0x6FC4E8 - 0x56 * 32, 32, 8)
     sh.fill(180, 20, 31, 9, 14)

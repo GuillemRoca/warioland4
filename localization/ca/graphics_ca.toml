@@ -44,6 +44,9 @@ save_message = "Sempre que tornes a un passadís, es desa la partida."
 # Intro newspaper subtitle (monospaced, 28 and 16 cells):
 # "LEGENDARY PYRAMID DISCOVERED" / "DEEP IN JUNGLE!!"
 intro_subtitle = ["PIRÀMIDE LLEGENDÀRIA TROBADA", "DINS LA JUNGLA!!"]
+# Second intro variant, steak-house flyer (22 and 9 cells):
+# "STEAKS! EAT AS MUCH AS" / "YOU CAN!!"
+steak_subtitle = ["BISTECS! MENJA'N", "A DOJO!!"]
 # Newspaper headline: "PYRAMID DISCOVERED" (letters available: P R A M I D E O S C, plus T B À)
 intro_headline = "PIRÀMIDE TROBADA"
 # Newspaper body: "Legendary treasure nearly found, but accidents hindered findings"

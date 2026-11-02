@@ -892,23 +892,28 @@ INTRO_EXTRA = bitmapfonts._parse("""
 #....#
 #....#
 #####.
+[']
+..##..
+..##..
+...#..
+..#...
+......
+......
+......
+......
 """)
 
 
-def intro_subtitle(rom, alloc, texts):
-    tiles = bytearray(lz77.decompress(rom, INTRO_TILES))
-    csize = lz77.compressed_size(rom, INTRO_TILES)
-
-    def cell_px(top, bot, i):
-        return gfx.tile_pixels(tiles, top + i) + gfx.tile_pixels(tiles, bot + i)
-
+def _subtitle_glyphs(base):
+    """Skeleton glyphs of the monospaced cutscene subtitle font (from the unmodified ROM)."""
+    tiles = lz77.decompress(base, INTRO_TILES)
     glyphs = {}
-    for text, top, bot in INTRO_LINES:   # harvest the skeletons of the original letters
+    for text, top, bot in INTRO_LINES:
         for i, ch in enumerate(text):
             if ch != " " and ch not in glyphs:
-                px = cell_px(top, bot, i)
+                px = gfx.tile_pixels(tiles, top + i) + gfx.tile_pixels(tiles, bot + i)
                 glyphs[ch] = [[1 if px[y][x] == 1 else 0 for x in range(8)] for y in range(16)]
-    for ch, g in INTRO_EXTRA.items():  # 8-row skeleton at x=1, rows 4-11
+    for ch, g in INTRO_EXTRA.items():  # 8-row skeletons at x=1, rows 4-11
         cell = [[0] * 8 for _ in range(16)]
         for y, row in enumerate(g):
             for x, v in enumerate(row):
@@ -918,14 +923,17 @@ def intro_subtitle(rom, alloc, texts):
     for x, y in ((3, 1), (4, 2)):       # grave accent above the A
         a[y][x] = 1
     glyphs["À"] = a
+    return glyphs
 
-    for (en, top, bot), ca in zip(INTRO_LINES, texts["intro_subtitle"]):
-        n = len(en)
-        if len(ca) > n:
-            raise ValueError(f"intro line {ca!r} longer than {n} cells")
-        ca = ca.center(n)
+
+def _render_subtitle(tiles, glyphs, lines):
+    """lines: [(text, cells, top_tile, bottom_tile)]; text is centred in its cells."""
+    for text, n, top, bot in lines:
+        if len(text) > n:
+            raise ValueError(f"subtitle line {text!r} longer than {n} cells")
+        text = text.center(n)
         ink = [[0] * (8 * n) for _ in range(16)]
-        for i, ch in enumerate(ca):
+        for i, ch in enumerate(text):
             if ch == " ":
                 continue
             g = glyphs[ch]
@@ -935,11 +943,37 @@ def intro_subtitle(rom, alloc, texts):
                         ink[y][8 * i + x] = 1
         ring = dilate(ink)
         for i in range(n):
-            for half, base in ((0, top), (1, bot)):
+            for half, base_tile in ((0, top), (1, bot)):
                 px = [[1 if ink[half * 8 + y][8 * i + x] else (10 if ring[half * 8 + y][8 * i + x] else 0)
                        for x in range(8)] for y in range(8)]
-                t = base + i
+                t = base_tile + i
                 tiles[t * 32:t * 32 + 32] = gfx.encode_tile(px)
+
+
+# Steak-house flyer scene (second intro variant): "STEAKS! EAT AS MUCH AS / YOU CAN!!"
+STEAK_TILES = 0x2D41D4                     # sUnk_82D41D4, LZ77
+STEAK_MAPS = (0x2D8292, 0x2D82D0)          # tilemap entries typed for the top / bottom halves
+STEAK_LINES = (22, 9)                      # cells per line (fixed by the cutscene code)
+
+
+def steak_subtitle(rom, base, alloc, glyphs, lines):
+    tiles = bytearray(lz77.decompress(rom, STEAK_TILES))
+    csize = lz77.compressed_size(rom, STEAK_TILES)
+    n1, n2 = STEAK_LINES
+    _render_subtitle(tiles, glyphs, [(lines[0], n1, 0x320, 0x340), (lines[1], n2, 0x320 + n1, 0x340 + n1)])
+    # give every cell its own tile (the original reused the "!" and space tiles)
+    for addr, first in ((STEAK_MAPS[0], 0x6320), (STEAK_MAPS[1], 0x6340)):
+        for i in range(n1 + n2):
+            struct.pack_into("<H", rom, addr + 2 * i, first + i)
+    romspace.store(rom, alloc, STEAK_TILES, csize, lz77.compress(tiles))
+
+
+def intro_subtitle(rom, base, alloc, texts):
+    glyphs = _subtitle_glyphs(base)
+    tiles = bytearray(lz77.decompress(rom, INTRO_TILES))
+    csize = lz77.compressed_size(rom, INTRO_TILES)
+    _render_subtitle(tiles, glyphs, [(ca, len(en), top, bot)
+                                     for (en, top, bot), ca in zip(INTRO_LINES, texts["intro_subtitle"])])
     newspaper_headline(tiles, texts["intro_headline"])
     newspaper_body(tiles, texts["intro_body"])
     romspace.store(rom, alloc, INTRO_TILES, csize, lz77.compress(tiles))
@@ -1051,4 +1085,5 @@ def apply(rom, base, texts):
     small_labels(rom, texts)
     credits(rom, texts)
     save_message(rom, texts)
-    intro_subtitle(rom, alloc, texts)
+    intro_subtitle(rom, base, alloc, texts)
+    steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"])

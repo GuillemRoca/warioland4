@@ -1,7 +1,7 @@
 # Wario Land 4 — traducció al català
 
 Traducció al català de *Wario Land 4* feta a partir de la versió anglesa
-(USA/Europa). El resultat es distribueix com a pedaç **BPS**:
+(USA/Europa), per **Guillem Roca Castany**. El resultat es distribueix com a pedaç **BPS**:
 [`warioland4_ca.bps`](warioland4_ca.bps).
 
 ## Aplicar el pedaç
@@ -36,7 +36,8 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   - pausa (TORNA / SURT / ABANDONA, MÀX i els dos diàlegs);
   - avís de desat després del primer nivell;
   - botigues, Sala de So i minijocs (SURT, MENÚ, REGAL, 1 JOC, MÀX, MIRA);
-  - capçaleres i nota de drets d'autor dels crèdits;
+  - capçaleres dels crèdits, amb una pàgina final nova: "TRADUCCIÓ AL
+    CATALÀ — GUILLEM ROCA CASTANY";
   - final del joc ("Gràcies, WARIO...").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
@@ -90,6 +91,10 @@ exactament la ROM traduïda.
   japonesos no es mostren mai. Les lletres accentuades ocupen les caselles de
   les kanes petites `0x6C–0x77`. Les caselles buides `0xF3–0xFE` no serveixen:
   la selecció d'arxiu fa servir algunes d'aquestes tiles buides de farciment.
+- La versió anglesa no mostrava la darrera pàgina dels crèdits (la de la nota de
+  drets d'autor): el codi la saltava quan `gLanguage = 0`. El pedaç canvia
+  aquesta comprovació (`0x94AEC`) perquè es mostri, i hi posa el crèdit de la
+  traducció en lloc de la nota.
 - Els diàlegs es dibuixen amb la mateixa font 8×16 i l'espaiat proporcional
   dels originals. Els gràfics comprimits (LZ77/RLE) es recomprimeixen; si no
   caben al lloc original, es mouen a l'espai lliure del final de la ROM i se'n

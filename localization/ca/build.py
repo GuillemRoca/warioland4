@@ -93,7 +93,7 @@ def build(base_path, out_rom, out_bps):
     os.makedirs(os.path.dirname(os.path.abspath(out_rom)), exist_ok=True)
     with open(out_rom, "wb") as f:
         f.write(rom)
-    patch = bps.create(base, rom, metadata=b"Wario Land 4 - traduccio al catala")
+    patch = bps.create(base, rom, metadata="Wario Land 4 - traducció al català per Guillem Roca Castany".encode())
     if bps.apply(base, patch) != bytes(rom):
         raise SystemExit("BPS self-check failed")
     with open(out_bps, "wb") as f:

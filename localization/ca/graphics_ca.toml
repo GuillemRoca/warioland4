@@ -113,29 +113,42 @@ row = 228
 en = "SPECIAL THANKS"
 ca = "AGRAÏMENTS ESPECIALS"
 
-# "ALL RIGHTS,INCLUDING THE COPYRIGHTS OF GAME, SCENARIO,MUSIC AND PROGRAM,RESERVED
-#  BY NINTENDO CO.,LTD."  (only the first line may carry accents: the lines touch)
+# Last page of the credits (rows 306-325).  The English version never displayed
+# it (the code skipped it); the patch shows it with the translation credit, so
+# the copyright notice rows are cleared to make room.
 [[credits]]
 row = 311
 en = "ALL RIGHTS,INCLUDING"
-ca = "LA MÚSICA, L'ARGUMENT, EL"
+ca = ""
 
 [[credits]]
 row = 312
 en = "THE COPYRIGHTS OF GAME,"
-ca = "PROGRAMA I TOTS ELS DRETS"
+ca = ""
 
 [[credits]]
 row = 313
 en = "SCENARIO,MUSIC AND"
-ca = "D'AUTOR DEL JOC ESTAN"
+ca = ""
 
 [[credits]]
 row = 314
 en = "PROGRAM,RESERVED"
-ca = "RESERVATS PER"
+ca = ""
 
 [[credits]]
 row = 315
 en = "BY NINTENDO CO.,LTD."
-ca = "NINTENDO CO., LTD."
+ca = ""
+
+# Translation credit on the last credits page (same layout as the other pages:
+# header on page row 5, name on page rows 8-9)
+[[credits_added]]
+row = 311
+kind = "header"
+text = "TRADUCCIÓ AL CATALÀ"
+
+[[credits_added]]
+row = 314
+kind = "name"
+text = "GUILLEM ROCA CASTANY"

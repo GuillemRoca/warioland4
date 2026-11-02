@@ -725,6 +725,7 @@ CREDITS_MAP = 0x78944C
 CREDITS_ROWS = 0x5280 // 64
 CREDITS_FONT = 0x749870          # raw tiles, first tile is VRAM tile 0x340
 CREDITS_FIRST_TILE = 0x340
+CREDITS_LAST_PAGE_CMP = 0x94AEC  # "cmp r0, #13" in the credits page loader
 BLANK = 0x000
 BLANK_TILES = (0x000, 0x3F4, 0x3FF)   # empty cells of the credits map use any of these
 CREDITS_NEW_TILES = {             # new glyph tiles in blank slots of the font block
@@ -824,16 +825,14 @@ def credits(rom, texts):
                 out += " "
         return " ".join(out.split())
 
-    for item in texts["credits"]:
-        row, en, ca = item["row"], item["en"], item["ca"]
-        if decode_row(row) != en:
-            raise ValueError(f"credits row {row}: expected {en!r}, found {decode_row(row)!r}")
-        pal = get(row, [c for c in range(32) if get(row, c) & 0x3FF not in BLANK_TILES][-1]) >> 12
-        for c in range(32):
-            put(row, c, BLANK, 0)
+    def row_is_blank(row):
+        return all(get(row, c) & 0x3FF in BLANK_TILES for c in range(32))
+
+    def write_header(row, ca, pal, start=None):
         if len(ca) > 30:
             raise ValueError(f"credits line {ca!r} too long")
-        start = 15 - len(ca) // 2 if item.get("align", "center") == "center" else item["col"]
+        if start is None:
+            start = 15 - len(ca) // 2
         for i, ch in enumerate(ca):
             col = start + i
             if ch == " ":
@@ -847,6 +846,42 @@ def credits(rom, texts):
                 put(mrow, col, CREDITS_NEW_TILES[mark][0], pal)
             else:
                 put(row, col, tile_for(ch), pal)
+
+    for item in texts["credits"]:
+        row, en, ca = item["row"], item["en"], item["ca"]
+        if decode_row(row) != en:
+            raise ValueError(f"credits row {row}: expected {en!r}, found {decode_row(row)!r}")
+        pal = get(row, [c for c in range(32) if get(row, c) & 0x3FF not in BLANK_TILES][-1]) >> 12
+        for c in range(32):
+            put(row, c, BLANK, 0)
+        write_header(row, ca, pal, None if item.get("align", "center") == "center" else item["col"])
+
+    # The English credits skip their last page (rows 306-325, the copyright notice):
+    # when gLanguage == 0 the code blanks BG0 instead of showing page 13
+    # ("cmp r0, #13" at 0x94AEC).  Raise the limit so the page is shown; it holds
+    # the translation credit instead of the notice.
+    if bytes(rom[CREDITS_LAST_PAGE_CMP:CREDITS_LAST_PAGE_CMP + 2]) != b"\x0d\x28":
+        raise ValueError("unexpected code at the credits last-page check")
+    rom[CREDITS_LAST_PAGE_CMP] = 0x0E
+
+    # New entries (translation credit).
+    # Headers use the 8x8 header font (palette 4); names use the 8x16 name font
+    # (palette 0): top halves at tiles 0x360+letter, bottom halves at 0x380+letter.
+    for item in texts.get("credits_added", []):
+        row, text, kind = item["row"], item["text"], item["kind"]
+        rows = (row - 1, row, row + 1) if kind == "header" else (row, row + 1)
+        if not all(row_is_blank(r) for r in rows):
+            raise ValueError(f"credits rows {rows} are not empty")
+        if kind == "header":
+            write_header(row, text, 4)
+        else:
+            if len(text) > 30 or not all(ch == " " or "A" <= ch <= "Z" for ch in text):
+                raise ValueError(f"credits name {text!r} must be A-Z capitals, max 30")
+            start = 15 - len(text) // 2
+            for i, ch in enumerate(text):
+                if ch != " ":
+                    put(row, start + i, 0x360 + ord(ch) - 65, 0)
+                    put(row + 1, start + i, 0x380 + ord(ch) - 65, 0)
 
 
 # ---------------------------------------------------------------------------

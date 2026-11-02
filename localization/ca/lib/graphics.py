@@ -1085,6 +1085,41 @@ def newspaper_body(tiles, lines):
         put_mask(sh, m, NEWS_BODY_X0 + 2, top, 0xD)
 
 
+# ---------------------------------------------------------------------------
+# Ending: "Thank you, WARIO...♥".  OBJ tiles are LZ77 at 0x2D24B0; the sentence
+# is a proportional bitmap in sheet rows 0-1 shown by OAM frames (typewriter
+# animation) at 0x2D2800-0x2D2A00.  "Thank" / "you" sit in two sprite groups
+# separated by an 8px gap; the frames are patched to close it so the first word
+# gets a continuous 72px canvas (sheet x 0-72).  WARIO, the comma, the dots and
+# the heart are separate sprites and stay as they are.
+
+ENDING_OBJ = 0x2D24B0
+ENDING_FRAMES = (0x2D2700, 0x2D2B00)
+
+
+def ending_thanks(rom, alloc, texts):
+    lo, hi = ENDING_FRAMES
+    n = 0
+    for a in range(lo, hi - 6, 2):
+        e = struct.unpack_from("<3H", rom, a)
+        if e == (0x40F8, 0x81B0, 0x0000):
+            struct.pack_into("<H", rom, a + 2, 0x81B8)
+            n += 1
+        elif e == (0x00F8, 0x41D0, 0x0004):
+            struct.pack_into("<H", rom, a + 2, 0x41D8)
+            n += 1
+    if n < 4:
+        raise ValueError("ending OAM frames not found")
+    sheet = LZSheet(rom, ENDING_OBJ)
+    sheet.fill(0, 0, 72, 16, 0)
+    df = DialogFont(rom)
+    w = df.width(texts["ending_thanks"])
+    if w > 70:
+        raise ValueError("ending word too wide")
+    df.draw(sheet, texts["ending_thanks"], 70 - w, 0, {1: 1, 2: 2})
+    sheet.save(alloc)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1097,3 +1132,4 @@ def apply(rom, base, texts):
     save_message(rom, texts)
     intro_subtitle(rom, base, alloc, texts)
     steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"])
+    ending_thanks(rom, alloc, texts)

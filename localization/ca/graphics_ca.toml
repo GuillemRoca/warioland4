@@ -53,6 +53,9 @@ intro_headline = "PIRÀMIDE TROBADA"
 # Newspaper body: "Legendary treasure nearly found, but accidents hindered findings"
 intro_body = ["Tresor llegendari", "gairebé trobat,", "però hi ha hagut", "accidents."]
 
+# Ending: "Thank you, WARIO...♥" (only the first word is redrawn; max 70px)
+ending_thanks = "Gràcies"
+
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

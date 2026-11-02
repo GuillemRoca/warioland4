@@ -37,3 +37,87 @@ free = "REGAL"    # FREE (item shop)
 play = "JOC"      # the PLAY of "1PLAY" (mini-game shop price)
 best = "MÀX"      # BEST / TOP (high score labels)
 look = "MIRA"     # LOOK (Wario's Roulette)
+
+# Credits headers (rows of the credits tilemap) and the closing copyright notice.
+# Staff names and SUPER MARIO CLUB are left unchanged.
+[[credits]]
+row = 51
+en = "EXECUTIVE PRODUCER"
+ca = "PRODUCTOR EXECUTIU"
+
+[[credits]]
+row = 71
+en = "PRODUCER"
+ca = "PRODUCTOR"
+
+[[credits]]
+row = 88
+en = "DIRECTOR"
+ca = "DIRECTOR"
+
+[[credits]]
+row = 97
+en = "SUPERVISOR"
+ca = "SUPERVISOR"
+
+[[credits]]
+row = 108
+en = "PROGRAMMERS"
+ca = "PROGRAMADORS"
+
+[[credits]]
+row = 128
+en = "DESIGNERS"
+ca = "DISSENYADORS"
+
+[[credits]]
+row = 148
+en = "DESIGNERS"
+ca = "DISSENYADORS"
+
+[[credits]]
+row = 171
+en = "MUSIC"
+ca = "MÚSICA"
+
+[[credits]]
+row = 188
+en = "VOICE"
+ca = "VEUS"
+
+[[credits]]
+row = 210
+en = "ARTWORK"
+ca = "IL·LUSTRACIÓ"
+
+[[credits]]
+row = 228
+en = "SPECIAL THANKS"
+ca = "AGRAÏMENTS ESPECIALS"
+
+# "ALL RIGHTS,INCLUDING THE COPYRIGHTS OF GAME, SCENARIO,MUSIC AND PROGRAM,RESERVED
+#  BY NINTENDO CO.,LTD."  (only the first line may carry accents: the lines touch)
+[[credits]]
+row = 311
+en = "ALL RIGHTS,INCLUDING"
+ca = "LA MÚSICA, L'ARGUMENT, EL"
+
+[[credits]]
+row = 312
+en = "THE COPYRIGHTS OF GAME,"
+ca = "PROGRAMA I TOTS ELS DRETS"
+
+[[credits]]
+row = 313
+en = "SCENARIO,MUSIC AND"
+ca = "D'AUTOR DEL JOC ESTAN"
+
+[[credits]]
+row = 314
+en = "PROGRAM,RESERVED"
+ca = "RESERVATS PER"
+
+[[credits]]
+row = 315
+en = "BY NINTENDO CO.,LTD."
+ca = "NINTENDO CO., LTD."

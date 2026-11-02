@@ -690,6 +690,140 @@ def small_labels(rom, texts):
     draw_styled(sh, m, 180 + 1 + (29 - len(m[0])) // 2, 21, [("ink", 3), ("ring8", 1)])
 
 
+# ---------------------------------------------------------------------------
+# Credits: one tall raw tilemap (sUnk_878944C) of 32-tile rows.  Headers use an
+# 8x8 capital font at tiles 0x340-0x35B (sUnk_8749870, loaded at tile 0x340).
+# Accented capitals are drawn as the plain letter plus an accent tile in the row
+# above (or a cedilla tile in the row below).
+
+CREDITS_MAP = 0x78944C
+CREDITS_ROWS = 0x5280 // 64
+CREDITS_FONT = 0x749870          # raw tiles, first tile is VRAM tile 0x340
+CREDITS_FIRST_TILE = 0x340
+BLANK = 0x000
+BLANK_TILES = (0x000, 0x3F4, 0x3FF)   # empty cells of the credits map use any of these
+CREDITS_NEW_TILES = {             # new glyph tiles in blank slots of the font block
+    "acute": (0x35C, """
+........
+........
+........
+....111.
+...1221.
+..1221..
+..111...
+........"""),
+    "grave": (0x35D, """
+........
+........
+........
+.111....
+.1221...
+..1221..
+...111..
+........"""),
+    "diaer": (0x35E, """
+........
+........
+........
+........
+111..111
+121..121
+111..111
+........"""),
+    "cedilla": (0x35F, """
+...1221.
+...1121.
+..11221.
+..1111..
+........
+........
+........
+........"""),
+    "·": (0x37A, """
+........
+........
+..1111..
+..1221..
+..1221..
+..1111..
+........
+........"""),
+    "'": (0x37B, """
+..1111..
+..1221..
+..1221..
+...121..
+..111...
+........
+........
+........"""),
+}
+ACCENTS = {"À": ("A", "grave"), "È": ("E", "grave"), "É": ("E", "acute"), "Í": ("I", "acute"),
+           "Ï": ("I", "diaer"), "Ò": ("O", "grave"), "Ó": ("O", "acute"), "Ú": ("U", "acute"),
+           "Ü": ("U", "diaer"), "Ç": ("C", "cedilla")}
+
+
+def credits(rom, texts):
+    for name, (tile, art) in CREDITS_NEW_TILES.items():
+        px = [[int(c) if c != "." else 0 for c in line] for line in art.strip().splitlines()]
+        o = CREDITS_FONT + (tile - CREDITS_FIRST_TILE) * 32
+        if rom[o:o + 32] != bytes(32):
+            raise ValueError(f"credits font slot {tile:#x} is not empty")
+        rom[o:o + 32] = gfx.encode_tile(px)
+
+    def entry(row, col):
+        return CREDITS_MAP + (row * 32 + col) * 2
+
+    def get(row, col):
+        return struct.unpack_from("<H", rom, entry(row, col))[0]
+
+    def put(row, col, tile, pal):
+        struct.pack_into("<H", rom, entry(row, col), tile | (pal << 12))
+
+    def tile_for(ch):
+        if "A" <= ch <= "Z":
+            return CREDITS_FIRST_TILE + ord(ch) - 65
+        return {".": 0x35A, ",": 0x35B, "·": 0x37A, "'": 0x37B}[ch]
+
+    def decode_row(row):
+        out = ""
+        for c in range(32):
+            t = get(row, c) & 0x3FF
+            if CREDITS_FIRST_TILE <= t < CREDITS_FIRST_TILE + 26:
+                out += chr(65 + t - CREDITS_FIRST_TILE)
+            elif t == 0x35A:
+                out += "."
+            elif t == 0x35B:
+                out += ","
+            else:
+                out += " "
+        return " ".join(out.split())
+
+    for item in texts["credits"]:
+        row, en, ca = item["row"], item["en"], item["ca"]
+        if decode_row(row) != en:
+            raise ValueError(f"credits row {row}: expected {en!r}, found {decode_row(row)!r}")
+        pal = get(row, [c for c in range(32) if get(row, c) & 0x3FF not in BLANK_TILES][-1]) >> 12
+        for c in range(32):
+            put(row, c, BLANK, 0)
+        if len(ca) > 30:
+            raise ValueError(f"credits line {ca!r} too long")
+        start = 15 - len(ca) // 2 if item.get("align", "center") == "center" else item["col"]
+        for i, ch in enumerate(ca):
+            col = start + i
+            if ch == " ":
+                continue
+            if ch in ACCENTS:
+                base_ch, mark = ACCENTS[ch]
+                put(row, col, tile_for(base_ch), pal)
+                mrow = row + 1 if mark == "cedilla" else row - 1
+                if get(mrow, col) & 0x3FF not in BLANK_TILES:
+                    raise ValueError(f"no room for the accent of {ch!r} in credits row {row}")
+                put(mrow, col, CREDITS_NEW_TILES[mark][0], pal)
+            else:
+                put(row, col, tile_for(ch), pal)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -698,3 +832,4 @@ def apply(rom, base, texts):
     file_select(rom, alloc, texts)
     title_push_start(rom, alloc, texts)
     small_labels(rom, texts)
+    credits(rom, texts)

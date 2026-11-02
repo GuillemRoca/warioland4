@@ -849,6 +849,85 @@ def save_message(rom, texts):
         df.draw(canvas, line, 0, 16 * i, {1: outline, 2: fill})
 
 
+# ---------------------------------------------------------------------------
+# Intro newspaper subtitle "LEGENDARY PYRAMID DISCOVERED / DEEP IN JUNGLE!!".
+# Pre-rendered in the LZ77 tileset 0x28E880: monospaced 8px cells, 1px ink (1)
+# with an 8-neighbour outline (10).  Line 1 = 28 cells (tiles 0x320 top /
+# 0x340 bottom), line 2 = 16 cells (0x360 / 0x380).  Glyphs missing from the
+# English text are drawn here as 8-row skeletons.
+
+INTRO_TILES = 0x28E880
+INTRO_LINES = [("LEGENDARY PYRAMID DISCOVERED", 0x320, 0x340), ("DEEP IN JUNGLE!!", 0x360, 0x380)]
+INTRO_EXTRA = bitmapfonts._parse("""
+[T]
+######
+..#...
+..#...
+..#...
+..#...
+..#...
+..#...
+..#...
+[B]
+#####.
+#....#
+#....#
+#####.
+#....#
+#....#
+#....#
+#####.
+""")
+
+
+def intro_subtitle(rom, alloc, texts):
+    tiles = bytearray(lz77.decompress(rom, INTRO_TILES))
+    csize = lz77.compressed_size(rom, INTRO_TILES)
+
+    def cell_px(top, bot, i):
+        return gfx.tile_pixels(tiles, top + i) + gfx.tile_pixels(tiles, bot + i)
+
+    glyphs = {}
+    for text, top, bot in INTRO_LINES:   # harvest the skeletons of the original letters
+        for i, ch in enumerate(text):
+            if ch != " " and ch not in glyphs:
+                px = cell_px(top, bot, i)
+                glyphs[ch] = [[1 if px[y][x] == 1 else 0 for x in range(8)] for y in range(16)]
+    for ch, g in INTRO_EXTRA.items():  # 8-row skeleton at x=1, rows 4-11
+        cell = [[0] * 8 for _ in range(16)]
+        for y, row in enumerate(g):
+            for x, v in enumerate(row):
+                cell[4 + y][1 + x] = v
+        glyphs[ch] = cell
+    a = [row[:] for row in glyphs["A"]]
+    for x, y in ((3, 1), (4, 2)):       # grave accent above the A
+        a[y][x] = 1
+    glyphs["À"] = a
+
+    for (en, top, bot), ca in zip(INTRO_LINES, texts["intro_subtitle"]):
+        n = len(en)
+        if len(ca) > n:
+            raise ValueError(f"intro line {ca!r} longer than {n} cells")
+        ca = ca.center(n)
+        ink = [[0] * (8 * n) for _ in range(16)]
+        for i, ch in enumerate(ca):
+            if ch == " ":
+                continue
+            g = glyphs[ch]
+            for y in range(16):
+                for x in range(8):
+                    if g[y][x]:
+                        ink[y][8 * i + x] = 1
+        ring = dilate(ink)
+        for i in range(n):
+            for half, base in ((0, top), (1, bot)):
+                px = [[1 if ink[half * 8 + y][8 * i + x] else (10 if ring[half * 8 + y][8 * i + x] else 0)
+                       for x in range(8)] for y in range(8)]
+                t = base + i
+                tiles[t * 32:t * 32 + 32] = gfx.encode_tile(px)
+    romspace.store(rom, alloc, INTRO_TILES, csize, lz77.compress(tiles))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -859,3 +938,4 @@ def apply(rom, base, texts):
     small_labels(rom, texts)
     credits(rom, texts)
     save_message(rom, texts)
+    intro_subtitle(rom, alloc, texts)

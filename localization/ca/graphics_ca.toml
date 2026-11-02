@@ -41,6 +41,10 @@ look = "MIRA"     # LOOK (Wario's Roulette)
 # Shown after clearing the first level: "Your game is always saved when you go back to a passage."
 save_message = "Sempre que tornes a un passadís, es desa la partida."
 
+# Intro newspaper subtitle (monospaced, 28 and 16 cells):
+# "LEGENDARY PYRAMID DISCOVERED" / "DEEP IN JUNGLE!!"
+intro_subtitle = ["PIRÀMIDE LLEGENDÀRIA TROBADA", "DINS LA JUNGLA!!"]
+
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

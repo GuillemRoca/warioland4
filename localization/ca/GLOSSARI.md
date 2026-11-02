@@ -1,0 +1,166 @@
+# Glossari anglès → català — Wario Land 4
+
+Termes fixats per a la traducció catalana de *Wario Land 4* (versió USA/Europa,
+base anglesa). Serveix per mantenir la coherència entre cadenes de text, gràfics
+i futures revisions. Les entrades marcades amb *(gràfic)* són text dibuixat en
+tiles, amb espai limitat.
+
+## Criteris generals
+
+- **Registre:** tractament de *tu*, to col·loquial i proper, com l'original.
+- **Gènere:** Wario és masculí ("Benvingut", "N'estàs segur?").
+- **Majúscules:** els noms de lloc i de nivell porten majúscula als mots
+  principals, com a topònims ("Llac Místic", "Bosc de Gargots"). Els títols
+  de cançons segueixen la norma catalana: només la primera paraula ("Tinc
+  tanta son").
+- **Noms propis:** es mantenen Wario, Vizorman, Cractus, Nintendo i els noms
+  del personal dels crèdits. Els noms de caps i d'objectes amb joc de paraules
+  s'adapten (Gatpenat, Aerosegador...).
+- **Accents:** la font del joc no tenia accents; s'hi han dibuixat
+  `à è é í ï ò ó ú ü ç · ,`. No hi ha majúscules accentuades a les cadenes de
+  text: les frases s'han redactat per evitar-les (p. ex. "Això és..." en lloc
+  de "És..."). Als gràfics sí que se n'han dibuixat (MÀX, MENÚ, crèdits).
+- **Botons:** START i A/B es mantenen com a noms de botó ("PREM START").
+
+## Menús i interfície
+
+| Anglès | Català | Notes |
+|---|---|---|
+| PUSH START | PREM START | Pantalla de títol *(gràfic)* |
+| NO DATA | SENSE DADES | Arxiu buit |
+| SAVE (A/B) | ARXIU (A/B) | Etiqueta de la ranura de partida *(gràfic, 3×5 px)* |
+| DELETE DATA | ESBORRAR | Botó de la selecció d'arxiu *(gràfic)* |
+| QUIT (delete mode) | SURT | Sortir del mode d'esborrar *(gràfic)* |
+| Normal | Normal | Dificultat |
+| Hard | Difícil | Dificultat *(gràfic)* |
+| S-Hard (Super Hard) | Extrem | Dificultat *(gràfic)*; "S-Difícil" no hi cabia |
+| Erase all saved game data? | Vols esborrar totes les dades desades? | Pantalla d'esborrat |
+| Are you sure? | N'estàs segur? | |
+| Yes / No | Sí / No | |
+| RETURN | TORNA | Pausa: tornar al nivell *(gràfic)* |
+| QUIT | SURT | Pausa: desar i sortir *(gràfic)* |
+| GIVE UP | ABANDONA | Pausa: abandonar el nivell *(gràfic)* |
+| BEST / TOP | MÀX | Millor puntuació. "RÈCORD" no hi cabia *(gràfic)* |
+| EXIT | SURT | Botigues i sala de so *(gràfic)* |
+| MENU | MENÚ | Pestanya de la botiga d'objectes *(gràfic)* |
+| FREE | REGAL | Objecte gratuït de la botiga *(gràfic)* |
+| 1PLAY | 1 JOC | Preu d'una partida als minijocs *(gràfic)* |
+| LOOK | MIRA | Ruleta de Wario *(gràfic)* |
+| course | nivell | "Progress in this course" → "el progrés d'aquest nivell" |
+| passage | passadís | |
+| Title Screen | pantalla de títol | |
+| turn the power OFF | apaga la consola | |
+| coins | monedes | |
+| medals | medalles | |
+| items | objectes | |
+| high score | rècord | Només a les cadenes de text |
+| mini-game(s) | minijoc(s) | |
+| Item Shop | botiga (d'objectes) | |
+| Mini-Game Shop | Botiga de Minijocs | |
+| Sound Room | Sala de So | |
+
+## Passadissos
+
+| Anglès | Català |
+|---|---|
+| Entry Passage | Passadís d'Entrada |
+| Emerald Passage | Passadís Maragda |
+| Ruby Passage | Passadís Robí |
+| Topaz Passage | Passadís Topazi |
+| Sapphire Passage | Passadís Safir |
+| Golden Pyramid | Piràmide Daurada |
+| Golden Passage | Passadís Daurat |
+
+## Nivells
+
+| Passadís | Anglès | Català |
+|---|---|---|
+| Entrada | Hall of Hieroglyphs | Sala dels Jeroglífics |
+| Maragda | Palm Tree Paradise | Paradís de Palmeres |
+| Maragda | Wildflower Fields | Camps de Flors Silvestres |
+| Maragda | Mystic Lake | Llac Místic |
+| Maragda | Monsoon Jungle | Jungla del Monsó |
+| Robí | The Curious Factory | La Fàbrica Curiosa |
+| Robí | The Toxic Landfill | L'Abocador Tòxic |
+| Robí | 40 Below Fridge | Nevera a 40 Sota Zero |
+| Robí | Pinball Zone | Zona de Pinball |
+| Topazi | Toy Block Tower | Torre de Blocs de Joguina |
+| Topazi | The Big Board | El Gran Tauler |
+| Topazi | Doodle Woods | Bosc de Gargots |
+| Topazi | Domino Row | Filera de Dòminos |
+| Safir | Crescent Moon Village | Poble de la Mitja Lluna |
+| Safir | Arabian Night | Nit Aràbiga |
+| Safir | Fiery Cavern | Caverna Ardent |
+| Safir | Hotel Horror | Hotel de l'Horror |
+
+## Caps
+
+| Anglès | Català | Notes |
+|---|---|---|
+| Spoiled Rotten | Malcriat Podrit | Joc de paraules "consentit / podrit" |
+| Cractus | Cractus | Nom propi, es manté |
+| Cuckoo Condor | Còndor Cucut | |
+| Aerodent | Aerosegador | aero + rosegador |
+| Catbat | Gatpenat | gat + ratpenat |
+| Golden Diva | Diva Daurada | |
+
+## Objectes de la botiga
+
+| Anglès | Català |
+|---|---|
+| Apple Bomb | Poma Bomba |
+| Blast Cannon | Canó Explosiu |
+| Vizorman | Vizorman (nom propi; "en Vizorman") |
+| Bugle | Corneta |
+| Black Dog | Gos Negre |
+| Large Lips | Llavis Grossos |
+| Big Fist | Puny Gegant |
+| Black Dragon | Drac Negre |
+
+## Minijocs
+
+| Anglès | Català | Notes |
+|---|---|---|
+| Wario's Homerun Derby | Home Runs de Wario | "home run" és el terme usat també en català |
+| The Wario Hop | El Salt de Wario | |
+| Wario's Roulette | La Ruleta de Wario | |
+| STRIKE | STRIKE | Terme de beisbol, es manté *(gràfic)* |
+
+## Sala de So (títols dels CD)
+
+| Anglès | Català |
+|---|---|
+| About That Shepherd | Sobre aquell pastor |
+| Things That Never Change | Coses que mai canvien |
+| Tomorrow's Blood Pressure | Pressió arterial de demà |
+| Beyond the Headrush | Més enllà del vertigen |
+| Driftwood & the Island Dog | El tronc i el gos illenc |
+| The Judge's Feet | Els peus del jutge |
+| The Moon's Lamppost | El fanal de la lluna |
+| Soft Shell | Closca tova |
+| So Sleepy | Tinc tanta son |
+| The Short Futon | El futon curt |
+| Avocado Song | Cançó de l'alvocat |
+| Mr. Fly | El senyor Mosca |
+| Yesterday's Words | Paraules d'ahir |
+| The Errand | L'encàrrec |
+| You and Your Shoes | Tu i les teves sabates |
+| Mr. Ether & Planaria | L'èter i la planària |
+
+La lletra del karaoke (en japonès romanitzat) no es tradueix.
+
+## Crèdits
+
+| Anglès | Català |
+|---|---|
+| EXECUTIVE PRODUCER | PRODUCTOR EXECUTIU |
+| PRODUCER | PRODUCTOR |
+| DIRECTOR | DIRECTOR |
+| SUPERVISOR | SUPERVISOR |
+| PROGRAMMERS | PROGRAMADORS |
+| DESIGNERS | DISSENYADORS |
+| MUSIC | MÚSICA |
+| VOICE | VEUS |
+| ARTWORK | IL·LUSTRACIÓ |
+| SPECIAL THANKS | AGRAÏMENTS ESPECIALS |
+| SUPER MARIO CLUB | SUPER MARIO CLUB (nom propi) |

@@ -38,6 +38,9 @@ play = "JOC"      # the PLAY of "1PLAY" (mini-game shop price)
 best = "MÀX"      # BEST / TOP (high score labels)
 look = "MIRA"     # LOOK (Wario's Roulette)
 
+# Shown after clearing the first level: "Your game is always saved when you go back to a passage."
+save_message = "Sempre que tornes a un passadís, es desa la partida."
+
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

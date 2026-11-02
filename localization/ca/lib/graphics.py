@@ -824,6 +824,31 @@ def credits(rom, texts):
                 put(row, col, tile_for(ch), pal)
 
 
+# ---------------------------------------------------------------------------
+# Entry Passage, first clear: "Your game is always saved when you go back to a passage."
+# BG0 tiles are raw at 0x68681C (2D sheet); the English text lines live at:
+SAVE_MSG_SHEET = 0x68681C
+SAVE_MSG_LINES = [(88, 0, 48), (88, 88, 48), (88, 0, 64), (88, 88, 64), (56, 176, 64)]
+
+
+def save_message(rom, texts):
+    sheet = Sheet(rom, SAVE_MSG_SHEET, 32, 16)
+    pieces = [(0, 16 * i, w, 16, sx, sy) for i, (w, sx, sy) in enumerate(SAVE_MSG_LINES)]
+    canvas = Canvas(sheet, pieces)
+    px = [[canvas.get(x, y) for x in range(88)] for y in range(80) if canvas.get(0, y) is not None]
+    bg, outline, fill = detect_colors([[v for v in row if v is not None] for row in px])
+    df = DialogFont(rom)
+    lines = df.wrap(texts["save_message"], 88)
+    if len(lines) > len(SAVE_MSG_LINES):
+        raise ValueError(f"save message needs {len(lines)} lines: {lines}")
+    for line, (w, _, _) in zip(lines, SAVE_MSG_LINES):
+        if df.width(line) > w:
+            raise ValueError(f"save message line {line!r} wider than {w}px")
+    canvas.clear(bg)
+    for i, line in enumerate(lines):
+        df.draw(canvas, line, 0, 16 * i, {1: outline, 2: fill})
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -833,3 +858,4 @@ def apply(rom, base, texts):
     title_push_start(rom, alloc, texts)
     small_labels(rom, texts)
     credits(rom, texts)
+    save_message(rom, texts)

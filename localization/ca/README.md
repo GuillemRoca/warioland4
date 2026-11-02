@@ -38,7 +38,7 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   - botigues, Sala de So i minijocs (SURT, MENÚ, REGAL, 1 JOC, MÀX, MIRA);
   - capçaleres dels crèdits, amb una pàgina final nova: "TRADUCCIÓ AL
     CATALÀ — GUILLEM ROCA CASTANY";
-  - final del joc ("Gràcies, WARIO...").
+  - final del joc ("Gràcies, WARIO..." i "UNS DIES DESPRÉS…").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
 Es mantenen en l'original els noms propis (Wario, Nintendo, el personal dels

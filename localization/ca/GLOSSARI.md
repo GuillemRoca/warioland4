@@ -159,6 +159,7 @@ La lletra del karaoke (en japonès romanitzat) no es tradueix.
 | LEGENDARY PYRAMID DISCOVERED DEEP IN JUNGLE!! | PIRÀMIDE LLEGENDÀRIA TROBADA DINS LA JUNGLA!! | Subtítol (28 + 16 caràcters) |
 | STEAKS! EAT AS MUCH AS YOU CAN!! | BISTECS! MENJA'N A DOJO!! | Subtítol (22 + 9 caràcters) |
 | Thank you, WARIO... | Gràcies, WARIO... | Final del joc |
+| A FEW DAYS LATER... | UNS DIES DESPRÉS… | Després dels crèdits (màx. 16 lletres) |
 | Your game is always saved when you go back to a passage. | Sempre que tornes a un passadís, es desa la partida. | Avís després del primer nivell |
 
 ## Crèdits

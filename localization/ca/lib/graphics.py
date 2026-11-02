@@ -1155,6 +1155,62 @@ def ending_thanks(rom, alloc, texts):
     sheet.save(alloc)
 
 
+# ---------------------------------------------------------------------------
+# After the credits: "A FEW DAYS LATER..." typed with one 8x16 sprite per
+# character.  Glyph tiles live in the LZ77 OBJ sheet 0x285A40 (52 tiles; a cell
+# is tile c on row 0 plus tile 32+c on row 1, so columns 6-19 are usable), and
+# the typewriter is 16 OAM frames at 0x285C08 (frame k has k sprites).
+
+DAYS_OBJ = 0x285A40
+DAYS_FRAMES = 0x285C08
+DAYS_COLUMNS = range(6, 20)
+
+
+def days_later(rom, alloc, text):
+    sheet = LZSheet(rom, DAYS_OBJ)
+    if len(sheet.rom) != 0x680:
+        raise ValueError("unexpected size of the epilogue OBJ sheet")
+
+    def glyph(ch):
+        if ch == "…":   # the font's Japanese-style ellipsis, moved down to the baseline
+            g, dot = font.read_glyph(rom, 0xE6), font.read_glyph(rom, font.char_code("."))
+            low = lambda px: max(y for y in range(16) if any(px[y]))
+            shift = low(dot) - low(g)
+            return [g[y - shift] if 0 <= y - shift < 16 else [0] * 8 for y in range(16)]
+        if ch == "É":
+            return font._add_marks(font.read_glyph(rom, font.char_code("E")), [(5, 0), (4, 1)])
+        return font.read_glyph(rom, font.char_code(ch))
+
+    tiles, cols = {}, iter(DAYS_COLUMNS)
+    cells = []
+    for ch in text:
+        if ch == " ":
+            cells.append(None)
+            continue
+        if ch not in tiles:
+            c = next(cols)
+            g = glyph(ch)
+            for half in (0, 1):
+                for y in range(8):
+                    for x in range(8):
+                        sheet.set(c * 8 + x, half * 8 + y, g[half * 8 + y][x])
+            tiles[ch] = c
+        cells.append(tiles[ch])
+    x0 = -(len(text) * 8) // 2
+    sprites = [(x0 + 8 * i, t) for i, t in enumerate(cells) if t is not None]
+    if len(sprites) > 16:
+        raise ValueError("epilogue text needs more than 16 sprites")
+    a = DAYS_FRAMES
+    for k in range(1, 17):
+        if struct.unpack_from("<H", rom, a)[0] != k:
+            raise ValueError(f"unexpected epilogue frame at {a:#x}")
+        for j in range(k):
+            x, t = sprites[min(j, len(sprites) - 1)]
+            struct.pack_into("<3H", rom, a + 2 + 6 * j, 0x80F8, x & 0x1FF, 0x2000 | t)
+        a += 2 + 6 * k
+    sheet.save(alloc)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1168,3 +1224,4 @@ def apply(rom, base, texts):
     intro_subtitle(rom, base, alloc, texts)
     steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"])
     ending_thanks(rom, alloc, texts)
+    days_later(rom, alloc, texts["days_later"])

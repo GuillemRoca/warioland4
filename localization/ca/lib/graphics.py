@@ -529,9 +529,91 @@ def file_select(rom, alloc, texts):
     romspace.store(rom, alloc, FS_MAPS[0], maps[0][2], rle.compress(data, maps[0][1]))
 
 
+# ---------------------------------------------------------------------------
+# Title screen: "PUSH START" -> "PREM START"
+# OBJ tiles are LZ77 compressed at 0x298A50; the text is two 96x8 strips of tiles
+# (0x1AA-0x1B5 top, 0x1B6-0x1C1 bottom).  Letters are 11 rows with a shaded
+# multi-colour style; P and R are copied from the original, E and M are drawn here.
+
+TITLE_OBJ = 0x298A50
+TITLE_E = """
+.33333333
+337555573
+375555573
+351177773
+351173333
+35555573.
+36666673.
+366733333
+366666673
+377777773
+333333333
+"""
+TITLE_M = """
+.3333..3333.
+337755557733
+375555555573
+371177771173
+351137731153
+355573375553
+366673376663
+366673376663
+366673376663
+377773377773
+33333..33333
+"""
+
+
+def _parse_px(art):
+    return [[0 if c == "." else int(c, 16) for c in line] for line in art.strip().splitlines()]
+
+
+def title_push_start(rom, alloc, texts):
+    if texts["push"] != "PREM":
+        raise ValueError("only 'PREM' is supported for the title screen")
+    tiles = bytearray(lz77.decompress(rom, TITLE_OBJ))
+    csize = lz77.compressed_size(rom, TITLE_OBJ)
+    rows = [[0] * 96 for _ in range(16)]
+    for r, base in ((0, 0x1AA), (1, 0x1B6)):
+        for c in range(12):
+            px = gfx.tile_pixels(tiles, base + c)
+            for y in range(8):
+                rows[r * 8 + y][c * 8:c * 8 + 8] = px[y]
+    letters = {
+        "P": [row[4:14] for row in rows[3:14]],
+        "R": [row[73:83] for row in rows[3:14]],
+        "E": _parse_px(TITLE_E),
+        "M": _parse_px(TITLE_M),
+    }
+    for y in range(16):
+        rows[y][0:47] = [0] * 47
+    x = 4
+    for ch in "PREM":
+        g = letters[ch]
+        if x != 4:
+            x -= 1  # neighbouring letters share their outline column
+        for yy, line in enumerate(g):
+            for xx, v in enumerate(line):
+                cur = rows[3 + yy][x + xx]
+                if v in (0, 3) and cur not in (0, 3):
+                    continue
+                if v == 0:
+                    continue
+                rows[3 + yy][x + xx] = v
+        x += len(g[0])
+    if x > 47:
+        raise ValueError("title word too wide")
+    for r, base in ((0, 0x1AA), (1, 0x1B6)):
+        for c in range(12):
+            t = base + c
+            tiles[t * 32:t * 32 + 32] = gfx.encode_tile([rows[r * 8 + y][c * 8:c * 8 + 8] for y in range(8)])
+    romspace.store(rom, alloc, TITLE_OBJ, csize, lz77.compress(tiles))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
     pause_buttons(rom, texts)
     save_reset(rom, alloc, texts)
     file_select(rom, alloc, texts)
+    title_push_start(rom, alloc, texts)

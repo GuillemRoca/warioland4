@@ -19,3 +19,10 @@ are_you_sure = "N'estàs segur?"
 return = "TORNA"
 quit = "SURT"
 give_up = "ABANDONA"
+
+# File select
+delete_data = "ESBORRAR"      # DELETE DATA
+fs_quit = "SURT"              # QUIT (leave delete mode)
+save = "ARXIU"                # SAVE (label above the A / B file letter)
+hard = "Difícil"              # Hard
+s_hard = "Extrem"             # S-Hard

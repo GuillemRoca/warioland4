@@ -397,8 +397,141 @@ def pause_buttons(rom, texts):
     raw_bg_label(rom, tiles, n, en_map, usage, 1, 22, 6, texts["give_up"], f, 3, 12, 1, max_cols=(21, 28))
 
 
+# ---------------------------------------------------------------------------
+# Mask styling
+
+
+def dilate(mask, diagonal=True):
+    h, w = len(mask), len(mask[0])
+    out = [[0] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            if mask[y][x]:
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        if (dx or dy) and (diagonal or not (dx and dy)):
+                            yy, xx = y + dy, x + dx
+                            if 0 <= yy < h and 0 <= xx < w:
+                                out[yy][xx] = 1
+    return out
+
+
+def pad(mask, n):
+    w = len(mask[0])
+    return [[0] * (w + 2 * n) for _ in range(n)] + \
+           [[0] * n + r + [0] * n for r in mask] + [[0] * (w + 2 * n) for _ in range(n)]
+
+
+def style_layers(mask, layers):
+    """layers: list of (kind, colour) applied outward from the ink:
+    ('ink', c), ('ring8', c), ('ring4', c), ('shadow', c).  Returns {(x,y): colour}
+    in the coordinates of the mask padded by 2 pixels."""
+    m = pad(mask, 2)
+    h, w = len(m), len(m[0])
+    covered = [r[:] for r in m]
+    out = {}
+    for kind, colour in layers:
+        if kind == "ink":
+            new = m
+        elif kind in ("ring8", "ring4"):
+            d = dilate(covered, diagonal=(kind == "ring8"))
+            new = [[d[y][x] and not covered[y][x] for x in range(w)] for y in range(h)]
+        elif kind == "shadow":
+            new = [[(y > 0 and covered[y - 1][x]) and not covered[y][x] for x in range(w)] for y in range(h)]
+        for y in range(h):
+            for x in range(w):
+                if new[y][x]:
+                    if colour is not None:
+                        out[(x, y)] = colour
+                    covered[y][x] = 1
+    return out
+
+
+def draw_styled(target, mask, x0, y0, layers):
+    """Draw a styled mask whose ink's top-left lands at (x0, y0)."""
+    for (x, y), c in style_layers(mask, layers).items():
+        target.set(x0 + x - 2, y0 + y - 2, c)
+
+
+# ---------------------------------------------------------------------------
+# File select screen
+
+FS_BG_TILES = 0x7430FC      # sUnk_87430FC, LZ77 BG tiles at 0x06004000
+FS_OBJ_TILES = 0x73D764     # sUnk_873D764, LZ77 OBJ tiles (2D mapping)
+FS_MAPS = (0x7429EC, 0x742B2C, 0x742E00)   # RLE tilemaps (BG1, BG2 and its alternative)
+
+
+def file_select(rom, alloc, texts):
+    obj = LZSheet(rom, FS_OBJ_TILES)
+    # DELETE DATA strip: 64x8 at (0, 96), solid colour 14
+    obj.fill(0, 96, 64, 8, 0)
+    m = bitmapfonts.CAPS7.mask(texts["delete_data"])
+    x0 = (64 - len(m[0])) // 2
+    for y, r in enumerate(m):
+        for x, v in enumerate(r):
+            if v:
+                obj.set(x0 + x, 97 + y, 14)
+    # QUIT button, three colour states, each 32x13 at y=130
+    m = bitmapfonts.SKEL10.mask(texts["fs_quit"], gap=2)
+    for x_left, ink, ring, shadow in ((97, 12, 4, 10), (129, 12, 13, 4), (161, 8, 12, None)):
+        obj.fill(x_left, 129, 32, 14, 0)
+        layers = [("ink", ink), ("ring8", ring)] + ([("shadow", shadow)] if shadow else [])
+        draw_styled(obj, m, x_left + 1 + (30 - len(m[0])) // 2, 131, layers)
+    # Difficulty pop-up: 48x16 boxes at x=112 (Normal y=0, Hard y=16, S-Hard y=32)
+    for y_top, key, ink in ((16, "hard", 6), (32, "s_hard", 8)):
+        obj.fill(112, y_top, 48, 16, 14)
+        m = bitmapfonts.SKEL10.mask(texts[key])
+        draw_styled(obj, m, 121, y_top + 4, [("ink", ink), ("ring8", 1)])
+    obj.save(alloc)
+
+    bg = LZSheet(rom, FS_BG_TILES)
+    # Difficulty labels: 40x16 slots at y=176 (Normal x=0, Hard x=40, S-Hard x=80)
+    for slot_x, key, ink in ((40, "hard", 6), (80, "s_hard", 14)):
+        bg.fill(slot_x, 176, 40, 16, 0)
+        m = bitmapfonts.SKEL10.mask(texts[key])
+        if len(m[0]) > 36:
+            raise ValueError(f"difficulty label {texts[key]!r} too wide")
+        draw_styled(bg, m, slot_x + (40 - len(m[0])) // 2, 180, [("ink", ink), ("ring8", 5), ("ring4", 2)])
+
+    # "SAVE" (tiles 0x160-0x161 over the big A/B letters at map cells (3..4, 4) and (3..4, 13))
+    maps = []
+    for a in FS_MAPS:
+        mm, st, cs = rle.decompress(rom, a)
+        maps.append([[mm[2 * i] | (mm[2 * i + 1] << 8) for i in range(len(mm) // 2)], st, cs])
+    entries = maps[0][0]
+    used = {e & 0x3FF for mp in maps for e in mp[0]}
+    ntiles = len(bg.rom) // 32
+    blank = lambda t: bg.rom[t * 32:t * 32 + 32] == bytes(32)
+    spare = [t for t in reversed(range(ntiles)) if t not in used and blank(t)]
+    m = bitmapfonts.TINY5.mask(texts["save"])
+    w = len(m[0])
+    xs = 32 - w // 2                       # centred over the letter (map cols 3-4)
+    c0, c1 = xs // 8, (xs + w - 1) // 8
+    slots = [0x160, 0x161] + spare[:c1 - c0 - 1]
+    for i, c in enumerate(range(c0, c1 + 1)):
+        t = slots[i]
+        bg.fill((t % 32) * 8, (t // 32) * 8, 8, 8, 0)
+        for y, r in enumerate(m):
+            for x, v in enumerate(r):
+                px = xs + x - c * 8
+                if v and 0 <= px < 8:
+                    bg.set((t % 32) * 8 + px, (t // 32) * 8 + 1 + y, 2)
+        for row in (4, 13):
+            entries[row * 32 + c] = t | (12 << 12)
+    for row in (4, 13):
+        for c in range(2, 6):
+            if not (c0 <= c <= c1):
+                entries[row * 32 + c] = 0
+    bg.save(alloc)
+    data = bytearray()
+    for e in entries:
+        data += bytes([e & 0xFF, e >> 8])
+    romspace.store(rom, alloc, FS_MAPS[0], maps[0][2], rle.compress(data, maps[0][1]))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
     pause_buttons(rom, texts)
     save_reset(rom, alloc, texts)
+    file_select(rom, alloc, texts)

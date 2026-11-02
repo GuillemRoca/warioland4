@@ -558,3 +558,191 @@ TINY5 = BitmapFont("""
 #.#
 #.#
 """, height=5, space=2, gap=1)
+
+
+def _variant(base, extra_src, height=None, space=None):
+    """New font = base glyphs (optionally padded at the top) + extra glyphs."""
+    f = BitmapFont.__new__(BitmapFont)
+    f.height = height or base.height
+    pad = f.height - base.height
+    f.glyphs = {k: [[0] * len(g[0]) for _ in range(pad)] + g for k, g in base.glyphs.items()}
+    f.glyphs.update(_parse(extra_src))
+    f.space = base.space if space is None else space
+    f.gap, f.baseline = base.gap, 0
+    for k, g in f.glyphs.items():
+        if len(g) != f.height:
+            raise ValueError(f"glyph {k!r} height {len(g)} != {f.height}")
+    return f
+
+
+# CAPS7 with narrow S and U (EXIT button) and Ú with the accent two rows above.
+CAPS7_NARROW = _variant(CAPS7, """
+[S]
+.####
+##...
+##...
+.###.
+...##
+...##
+####.
+[U]
+##.##
+##.##
+##.##
+##.##
+##.##
+##.##
+.###.
+""")
+
+CAPS9_ACC = _variant(CAPS7, """
+[Ú]
+...##.
+..##..
+##..##
+##..##
+##..##
+##..##
+##..##
+##..##
+.####.
+""", height=9)
+
+# 8 rows: row 0 holds accents, capitals sit on rows 1-7.  À uses a 6-row A.
+CAPS8 = _variant(CAPS7, """
+[À]
+.##...
+......
+.####.
+##..##
+######
+##..##
+##..##
+##..##
+""", height=8)
+
+# Condensed 1-pixel capitals, 8 rows with accent row (pause screen score panel).
+COND8 = BitmapFont("""
+[M]
+.....
+#...#
+##.##
+#.#.#
+#.#.#
+#...#
+#...#
+#...#
+[À]
+#..
+.#.
+#.#
+#.#
+###
+#.#
+#.#
+#.#
+[X]
+...
+#.#
+#.#
+#.#
+.#.
+#.#
+#.#
+#.#
+""", height=8, space=2)
+
+# 1-pixel 3x5 capitals with an accent row (mini-game shop "BEST" tab).
+TINY6 = BitmapFont("""
+[M]
+.....
+#...#
+##.##
+#.#.#
+#...#
+#...#
+[À]
+#..
+.#.
+#.#
+###
+#.#
+#.#
+[X]
+...
+#.#
+#.#
+.#.
+#.#
+#.#
+""", height=6, space=2)
+
+# Bold 5-row capitals with 2-pixel stems (item shop "FREE" card).
+BOLD5 = BitmapFont("""
+[R]
+###.
+##.#
+###.
+##.#
+##.#
+[E]
+###
+##.
+###
+##.
+###
+[G]
+####
+##..
+##.#
+##.#
+####
+[A]
+.##.
+##.#
+####
+##.#
+##.#
+[L]
+##.
+##.
+##.
+##.
+###
+""", height=5, space=2)
+
+# 1-pixel 7-row capitals (outlined roulette "LOOK" sign).
+SKEL7 = BitmapFont("""
+[M]
+#...#
+##.##
+#.#.#
+#.#.#
+#...#
+#...#
+#...#
+[I]
+#
+#
+#
+#
+#
+#
+#
+[R]
+####.
+#...#
+#...#
+####.
+#.#..
+#..#.
+#...#
+[A]
+.###.
+#...#
+#...#
+#####
+#...#
+#...#
+#...#
+""", height=7, space=3)

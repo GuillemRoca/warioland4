@@ -29,3 +29,11 @@ s_hard = "Extrem"             # S-Hard
 
 # Title screen: PUSH START -> PREM START (START is the button name and is kept)
 push = "PREM"
+
+# Shops, sound room and mini-games
+exit = "SURT"     # EXIT
+menu = "MENÚ"     # MENU (item shop tab)
+free = "REGAL"    # FREE (item shop)
+play = "JOC"      # the PLAY of "1PLAY" (mini-game shop price)
+best = "MÀX"      # BEST / TOP (high score labels)
+look = "MIRA"     # LOOK (Wario's Roulette)

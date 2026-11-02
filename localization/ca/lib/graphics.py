@@ -610,6 +610,86 @@ def title_push_start(rom, alloc, texts):
     romspace.store(rom, alloc, TITLE_OBJ, csize, lz77.compress(tiles))
 
 
+# ---------------------------------------------------------------------------
+# Small labels stored as raw tiles (shops, mini-games, score panels)
+
+
+def raw_sheet(rom, base, width_tiles=32):
+    return Sheet(rom, base, width_tiles, height_tiles=64)
+
+
+def put_mask(target, mask, x0, y0, colour):
+    for y, row in enumerate(mask):
+        for x, v in enumerate(row):
+            if v:
+                target.set(x0 + x, y0 + y, colour)
+
+
+def checkerboard(x, y, a=9, b=10):
+    return a if ((x // 2) + ((y + 1) // 2)) % 2 == 0 else b
+
+
+def small_labels(rom, texts):
+    f = bitmapfonts
+    # EXIT button (32x16, interior colour 1, ink 11) - three copies in the ROM
+    exit_copies = (0x6B8E88, 0x6EA61C, 0x738198)
+    m = f.CAPS7_NARROW.mask(texts["exit"])
+    for a in exit_copies:
+        sh = Sheet(rom, a, 32, 2)
+        sh.fill(3, 4, 26, 8, 1)
+        put_mask(sh, m, 3 + (26 - len(m[0])) // 2, 5, 11)
+
+    # Item shop MENU tab (BG sheet 0x732A58, tiles 0xCA-0xCD / 0xEA-0xED): ink 7, outline 4
+    sh = raw_sheet(rom, 0x732A58)
+    sh.fill(80, 51, 32, 13, 0)
+    m = f.CAPS9_ACC.mask(texts["menu"])
+    draw_styled(sh, m, 80 + (32 - len(m[0])) // 2, 51 + 2 - 2, [("ink", 7), ("ring8", 4)])
+
+    # Item shop FREE (OBJ sheet 0x735458, card bottom row at x=208, y=64)
+    sh = raw_sheet(rom, 0x735458)
+    sh.fill(209, 65, 22, 5, 1)
+    m = f.BOLD5.mask(texts["free"])
+    if len(m[0]) > 22:
+        raise ValueError("FREE label too wide")
+    put_mask(sh, m, 209 + (22 - len(m[0])) // 2, 65, 15)
+
+    # Mini-game shop "PLAY" of "1PLAY" (BG sheet 0x6E561C, shown as 32x8 from 2 tile pairs)
+    canvas = Canvas(raw_sheet(rom, 0x6E561C), [(0, 0, 16, 8, 0, 16), (16, 0, 16, 8, 0, 24)])
+    canvas.clear(0)
+    put_mask(canvas, f.CAPS7.mask(texts["play"]), 2, 1, 11)
+
+    # BEST / TOP -> MAX labels
+    best = texts["best"]
+    sh = Sheet(rom, 0x69F448, 4, 1)                      # passage screen, tiles 0x130-0x133, ink 3
+    sh.fill(0, 0, 32, 8, 0)                              # (the original T spilled into tile 3)
+    m = f.CAPS8.mask(best)
+    put_mask(sh, m, (28 - len(m[0])) // 2, 0, 3)
+    sh = raw_sheet(rom, 0x6D4038)                        # pause screen tiles 0x152-0x153
+    sh.fill(18 * 8, 10 * 8, 16, 8, 0)
+    put_mask(sh, f.COND8.mask(best), 18 * 8, 80, 3)
+    canvas = Canvas(raw_sheet(rom, 0x6E561C), [         # mini-game shop BG1 tab
+        (0, 0, 8, 8, 0, 72), (8, 0, 8, 8, 8, 72), (16, 0, 8, 8, 0, 80),
+        (0, 8, 8, 8, 8, 80), (8, 8, 8, 8, 0, 88), (16, 8, 8, 8, 8, 88)])
+    for y in range(4, 10):
+        for x in range(5, 20):
+            canvas.set(x, y, 4)
+    m = f.TINY6.mask(best)
+    put_mask(canvas, m, 5 + (15 - len(m[0])) // 2, 4, 7)
+    m = f.CAPS8.mask(best)
+    for a in (0x6F56C8, 0x711998):                       # mini-game HUD "TOP", 24x8 checkerboard
+        sh = Sheet(rom, a, 3, 1)
+        for y in range(8):
+            for x in range(24):
+                sh.set(x, y, checkerboard(x, y))
+        put_mask(sh, m, (24 - len(m[0])) // 2, 0, 3)
+
+    # Roulette "LOOK" sign (OBJ sheet 0x6FC4E8 - 0x56 tiles, 40x16 at sheet x=176, y=16)
+    sh = Sheet(rom, 0x6FC4E8 - 0x56 * 32, 32, 8)
+    sh.fill(180, 20, 31, 9, 14)
+    m = f.SKEL7.mask(texts["look"], gap=2)
+    draw_styled(sh, m, 180 + 1 + (29 - len(m[0])) // 2, 21, [("ink", 3), ("ring8", 1)])
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -617,3 +697,4 @@ def apply(rom, base, texts):
     save_reset(rom, alloc, texts)
     file_select(rom, alloc, texts)
     title_push_start(rom, alloc, texts)
+    small_labels(rom, texts)

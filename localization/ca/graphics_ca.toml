@@ -44,6 +44,8 @@ save_message = "Sempre que tornes a un passadís, es desa la partida."
 # Intro newspaper subtitle (monospaced, 28 and 16 cells):
 # "LEGENDARY PYRAMID DISCOVERED" / "DEEP IN JUNGLE!!"
 intro_subtitle = ["PIRÀMIDE LLEGENDÀRIA TROBADA", "DINS LA JUNGLA!!"]
+# Newspaper headline: "PYRAMID DISCOVERED" (letters available: P R A M I D E O S C, plus T B À)
+intro_headline = "PIRÀMIDE TROBADA"
 
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.

@@ -925,7 +925,83 @@ def intro_subtitle(rom, alloc, texts):
                        for x in range(8)] for y in range(8)]
                 t = base + i
                 tiles[t * 32:t * 32 + 32] = gfx.encode_tile(px)
+    newspaper_headline(tiles, texts["intro_headline"])
     romspace.store(rom, alloc, INTRO_TILES, csize, lz77.compress(tiles))
+
+
+# Newspaper headline "PYRAMID DISCOVERED" (BG2, identity tilemap over the same
+# tileset, so the sheet is the picture).  Ink is drawn with colours C D E F 1 2
+# over a noisy paper texture.  Letters are cut out of the original headline;
+# T and B are assembled from parts of I/E and P/D.
+HEAD_Y0, HEAD_Y1 = 31, 51
+HEAD_INK = {0xC, 0xD, 0xE, 0xF, 1, 2}
+HEAD_LETTERS = {  # x ranges in the original headline (end exclusive)
+    "P": (5, 18), "R": (199, 212), "A": (45, 59), "M": (59, 77), "I": (79, 85),
+    "D": (86, 101), "E": (213, 224), "O": (158, 172), "S": (134, 144), "C": (145, 157),
+}
+
+
+def newspaper_headline(tiles, text):
+    sh = Sheet(tiles, 0, 32, size=len(tiles))
+    H = HEAD_Y1 - HEAD_Y0
+
+    def cut(x0, x1):
+        return [[sh.get(x, y) if sh.get(x, y) in HEAD_INK else None for x in range(x0, x1)]
+                for y in range(HEAD_Y0, HEAD_Y1)]
+
+    glyph = {k: cut(*v) for k, v in HEAD_LETTERS.items()}
+    # T: top bar from E's top-left part, mirrored; stem from I, centred
+    e, i_ = glyph["E"], glyph["I"]
+    w = 13
+    t = [[None] * w for _ in range(H)]
+    for y in range(H):
+        for x in range(len(i_[0])):
+            t[y][(w - len(i_[0])) // 2 + x] = i_[y][x]
+    for y in range(4):
+        half = e[y][:7]
+        row = half + half[::-1][1:]
+        for x in range(min(w, len(row))):
+            if row[x] is not None:
+                t[y][x] = row[x]
+    glyph["T"] = t
+    # B: upper half of P over lower half of D
+    p, d = glyph["P"], glyph["D"]
+    wb = len(d[0])
+    b = [((p[y] + [None] * (wb - len(p[y]))) if y < H // 2 else d[y][:]) for y in range(H)]
+    glyph["B"] = b
+    # A with a grave accent drawn in the gap above the headline
+    glyph["À"] = glyph["A"]
+
+    gap, space = 1, 12
+    width = sum(len(glyph[c][0]) + gap for c in text if c != " ") + space * text.count(" ") - gap
+    if width > 236:
+        raise ValueError(f"headline {text!r} is {width}px wide")
+    # refill the band with paper texture from the plain rows under the headline
+    for y in range(HEAD_Y0, HEAD_Y1):
+        src = 51 + (y - HEAD_Y0) % 5
+        for x in range(240):
+            v = sh.get(x, src)
+            if v in HEAD_INK:
+                v = sh.get(x + 1 if x < 239 else x - 1, src)
+                if v in HEAD_INK:
+                    v = 7
+            sh.set(x, y, v)
+    x = (240 - width) // 2
+    for c in text:
+        if c == " ":
+            x += space
+            continue
+        g = glyph[c]
+        for y in range(H):
+            for xx, v in enumerate(g[y]):
+                if v is not None:
+                    sh.set(x + xx, HEAD_Y0 + y, v)
+        if c == "À":
+            cx = x + len(g[0]) // 2
+            for (ax, ay, v) in ((-2, 27, 0xC), (-1, 27, 0xD), (-1, 28, 0xD), (0, 28, 0xD),
+                                (0, 29, 0xD), (1, 29, 0xC), (1, 30, 0xC)):
+                sh.set(cx + ax, ay, v)
+        x += len(g[0]) + gap
 
 
 def apply(rom, base, texts):

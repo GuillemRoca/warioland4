@@ -7,7 +7,9 @@ LZ77-compressed tilesets.  Text is re-rendered with the game's own 8x16 font
 """
 from collections import Counter
 
-from . import font, gfx, lz77, rle, romspace
+import struct
+
+from . import bitmapfonts, font, gfx, lz77, rle, romspace
 
 
 class Sheet:
@@ -344,7 +346,59 @@ def save_reset(rom, alloc, texts):
     obj.save(alloc)
 
 
+# ---------------------------------------------------------------------------
+# Labels on BG layers whose tiles and tilemap are stored raw (uncompressed)
+
+def _tile_usage(rom, maps):
+    used = set()
+    for addr, n in maps:
+        used |= {struct.unpack_from("<H", rom, addr + 2 * i)[0] & 0x3FF for i in range(n)}
+    return used
+
+
+def raw_bg_label(rom, tiles_addr, ntiles, map_addr, usage_maps, row, col, ncols, text,
+                 bmfont, color, palbank, y0, max_cols=None):
+    """Re-render the label occupying map[row][col:col+ncols] (32-wide raw map),
+    centred on the same point.  Extra tiles come from blank, unreferenced slots."""
+    mask = bmfont.mask(text)
+    w = len(mask[0])
+    centre = col * 8 + ncols * 4
+    x_start = centre - w // 2
+    c0, c1 = x_start // 8, (x_start + w - 1) // 8
+    if max_cols and (c0 < max_cols[0] or c1 > max_cols[1]):
+        raise ValueError(f"label {text!r} ({w}px) does not fit")
+    own = [struct.unpack_from("<H", rom, map_addr + 2 * (row * 32 + c))[0] & 0x3FF
+           for c in range(col, col + ncols)]
+    tiles = rom[tiles_addr:tiles_addr + ntiles * 32]
+    used = _tile_usage(rom, usage_maps)
+    spare = [t for t in range(ntiles) if t not in used and tiles[t * 32:t * 32 + 32] == bytes(32)]
+    slots = own + spare
+    for c in range(col, col + ncols):  # clear the old label
+        struct.pack_into("<H", rom, map_addr + 2 * (row * 32 + c), 0)
+    buf = PixelBuf((c1 - c0 + 1) * 8, 8, 0)
+    for y, mrow in enumerate(mask):
+        for x, v in enumerate(mrow):
+            if v:
+                buf.set(x_start - c0 * 8 + x, y0 + y, color)
+    for i, c in enumerate(range(c0, c1 + 1)):
+        t = slots[i]
+        data = gfx.encode_tile([buf.px[y][i * 8:i * 8 + 8] for y in range(8)])
+        rom[tiles_addr + t * 32:tiles_addr + t * 32 + 32] = data
+        struct.pack_into("<H", rom, map_addr + 2 * (row * 32 + c), t | (palbank << 12))
+
+
+def pause_buttons(rom, texts):
+    tiles, n = 0x6D4038, 0x2800 // 32          # sUnk_86D4038, BG tiles of the pause screen
+    en_map = 0x6DCE38                          # sUnk_86DCE38, English BG0 tilemap (raw)
+    usage = [(0x6DCE38, 1024), (0x6E29F8, 1024), (0x6DD638, 2048), (0x6DE638, 1024)]
+    f = bitmapfonts.CAPS7
+    raw_bg_label(rom, tiles, n, en_map, usage, 1, 2, 6, texts["return"], f, 3, 12, 1)
+    raw_bg_label(rom, tiles, n, en_map, usage, 1, 13, 4, texts["quit"], f, 3, 12, 1)
+    raw_bg_label(rom, tiles, n, en_map, usage, 1, 22, 6, texts["give_up"], f, 3, 12, 1, max_cols=(21, 28))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
+    pause_buttons(rom, texts)
     save_reset(rom, alloc, texts)

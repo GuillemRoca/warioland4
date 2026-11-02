@@ -14,3 +14,8 @@ yes = "Sí"
 # Save data reset screen: "Erase all saved game data?" then "Are you sure?"
 erase_all = "Vols esborrar totes les dades desades?"
 are_you_sure = "N'estàs segur?"
+
+# Pause screen buttons: RETURN / QUIT / GIVE UP
+return = "TORNA"
+quit = "SURT"
+give_up = "ABANDONA"

@@ -941,6 +941,7 @@ def intro_subtitle(rom, alloc, texts):
                 t = base + i
                 tiles[t * 32:t * 32 + 32] = gfx.encode_tile(px)
     newspaper_headline(tiles, texts["intro_headline"])
+    newspaper_body(tiles, texts["intro_body"])
     romspace.store(rom, alloc, INTRO_TILES, csize, lz77.compress(tiles))
 
 
@@ -1017,6 +1018,27 @@ def newspaper_headline(tiles, text):
                                 (0, 29, 0xD), (1, 29, 0xC), (1, 30, 0xC)):
                 sh.set(cx + ax, ay, v)
         x += len(g[0]) + gap
+
+
+NEWS_BODY_X0, NEWS_BODY_X1 = 164, 240      # text column right of the photos
+NEWS_BODY_Y0, NEWS_BODY_Y1 = 53, 97        # above the rule line at row 98
+NEWS_BODY_TOPS = (55, 66, 76, 87)
+
+
+def newspaper_body(tiles, lines):
+    sh = Sheet(tiles, 0, 32, size=len(tiles))
+    if len(lines) > len(NEWS_BODY_TOPS):
+        raise ValueError("too many newspaper lines")
+    for y in range(NEWS_BODY_Y0, NEWS_BODY_Y1):
+        src = 27 + (y - NEWS_BODY_Y0) % 4          # plain paper rows between rule and headline
+        for x in range(NEWS_BODY_X0, NEWS_BODY_X1):
+            v = sh.get(x, src)
+            sh.set(x, y, 7 if v in HEAD_INK else v)
+    for top, line in zip(NEWS_BODY_TOPS, lines):
+        m = bitmapfonts.NEWS9.mask(line)
+        if len(m[0]) > NEWS_BODY_X1 - NEWS_BODY_X0 - 2:
+            raise ValueError(f"newspaper line {line!r} too wide ({len(m[0])}px)")
+        put_mask(sh, m, NEWS_BODY_X0 + 2, top, 0xD)
 
 
 def apply(rom, base, texts):

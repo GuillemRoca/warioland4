@@ -15,7 +15,7 @@ import tomllib
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from lib import bps, font  # noqa: E402
+from lib import bps, font, graphics  # noqa: E402
 
 BASE_MD5 = "5fe47355a33e3fabec2a1607af88a404"
 ROM_BASE = 0x08000000
@@ -85,12 +85,10 @@ def build(base_path, out_rom, out_bps):
     n = apply_strings(rom, strings)
     print(f"strings: {n} slots translated")
 
-    try:
-        from lib import graphics
-    except ImportError:
-        graphics = None
-    if graphics is not None:
-        graphics.apply(rom, base)
+    with open(os.path.join(HERE, "graphics_ca.toml"), "rb") as f:
+        gtexts = tomllib.load(f)
+    graphics.apply(rom, base, gtexts)
+    print("graphics: patched")
 
     os.makedirs(os.path.dirname(os.path.abspath(out_rom)), exist_ok=True)
     with open(out_rom, "wb") as f:

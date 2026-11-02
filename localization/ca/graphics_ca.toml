@@ -1,0 +1,12 @@
+# Catalan text for graphics that the game stores as pre-rendered tiles.
+# Dialog texts are word-wrapped automatically to the original box size.
+
+# Pause screen, QUIT: "Progress in this course will be saved and you'll return to the
+# Title Screen. Go to the Title Screen, then turn the power OFF. OK?"
+pause_quit = "Es desarà el progrés d'aquest nivell i tornaràs a la pantalla de títol. Per acabar, ves al títol i apaga la consola. D'acord?"
+
+# Pause screen, GIVE UP: "All the coins and items you collected in this course will now be lost. OK?"
+pause_giveup = "Perdràs totes les monedes i els objectes que has recollit en aquest nivell. D'acord?"
+
+no = "No"
+yes = "Sí"

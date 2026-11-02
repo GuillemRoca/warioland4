@@ -5,7 +5,9 @@ as 2D sheets 32 tiles wide (the layout used by the 2D OBJ mapping), or as
 LZ77-compressed tilesets.  Text is re-rendered with the game's own 8x16 font
 (see font.py) using the proportional spacing of the original dialogs.
 """
-from . import font, gfx
+from collections import Counter
+
+from . import font, gfx, lz77, rle, romspace
 
 
 class Sheet:
@@ -189,5 +191,160 @@ def pause_dialogs(rom, texts):
         _label(rom, sheet, 192, 32, 32, 16, texts["yes"], PAUSE_BG, PAUSE_COLORS, x_pad=0)
 
 
+# ---------------------------------------------------------------------------
+# Generic helpers for compressed BG screens and OBJ sheets
+
+
+def detect_colors(pixels):
+    """pixels: iterable of rows of palette indices containing outlined text.
+    Returns (background, outline, fill)."""
+    flat = Counter(v for row in pixels for v in row)
+    bg = flat.most_common(1)[0][0]
+    rows = [list(r) for r in pixels]
+    adj = Counter()
+    for y, row in enumerate(rows):
+        for x, v in enumerate(row):
+            if v == bg:
+                continue
+            for dy, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+                yy, xx = y + dy, x + dx
+                if 0 <= yy < len(rows) and 0 <= xx < len(row) and rows[yy][xx] == bg:
+                    adj[v] += 1
+    outline = adj.most_common(1)[0][0]
+    others = [c for c, _ in flat.most_common() if c not in (bg, outline)]
+    return bg, outline, others[0]
+
+
+class PixelBuf:
+    def __init__(self, w, h, v=0):
+        self.w, self.h = w, h
+        self.px = [[v] * w for _ in range(h)]
+
+    def get(self, x, y):
+        return self.px[y][x] if 0 <= x < self.w and 0 <= y < self.h else None
+
+    def set(self, x, y, v):
+        if not (0 <= x < self.w and 0 <= y < self.h):
+            raise ValueError(f"text overflows the area at ({x},{y})")
+        self.px[y][x] = v
+
+
+class BGScreen:
+    """A BG layer stored as LZ77 tiles + WL4-RLE tilemap(s)."""
+
+    def __init__(self, rom, tiles_addr, map_addr, other_maps=()):
+        self.rom = rom
+        self.tiles_addr, self.map_addr = tiles_addr, map_addr
+        self.tiles_csize = lz77.compressed_size(rom, tiles_addr)
+        self.tiles = bytearray(lz77.decompress(rom, tiles_addr))
+        m, self.size_type, self.map_csize = rle.decompress(rom, map_addr)
+        self.entries = [m[2 * i] | (m[2 * i + 1] << 8) for i in range(len(m) // 2)]
+        self.reserved = set()
+        for a in other_maps:  # keep tiles used by other (e.g. Japanese) tilemaps
+            om, _, _ = rle.decompress(rom, a)
+            self.reserved |= {(om[2 * i] | (om[2 * i + 1] << 8)) & 0x3FF for i in range(len(om) // 2)}
+
+    def tile_px(self, e):
+        px = gfx.tile_pixels(self.tiles, e & 0x3FF)
+        if e & 0x400:
+            px = [r[::-1] for r in px]
+        if e & 0x800:
+            px = px[::-1]
+        return px
+
+    def area_pixels(self, tx, ty, tw, th):
+        out = [[0] * (tw * 8) for _ in range(th * 8)]
+        for cy in range(th):
+            for cx in range(tw):
+                px = self.tile_px(self.entries[(ty + cy) * 32 + tx + cx])
+                for y in range(8):
+                    out[cy * 8 + y][cx * 8:cx * 8 + 8] = px[y]
+        return out
+
+    def write_area(self, tx, ty, buf, palbank):
+        tw, th = buf.w // 8, buf.h // 8
+        area = {(ty + cy) * 32 + tx + cx for cy in range(th) for cx in range(tw)}
+        used = {self.entries[i] & 0x3FF for i in range(len(self.entries)) if i not in area}
+        free = [t for t in range(len(self.tiles) // 32) if t not in used and t not in self.reserved]
+        known = {}
+        for t in range(len(self.tiles) // 32):
+            if t in used:
+                known.setdefault(bytes(self.tiles[t * 32:t * 32 + 32]), t)
+        for cy in range(th):
+            for cx in range(tw):
+                data = gfx.encode_tile([buf.px[cy * 8 + y][cx * 8:cx * 8 + 8] for y in range(8)])
+                if data in known:
+                    t = known[data]
+                else:
+                    if not free:
+                        raise ValueError("no free tiles left in the tileset")
+                    t = free.pop(0)
+                    self.tiles[t * 32:t * 32 + 32] = data
+                    known[data] = t
+                self.entries[(ty + cy) * 32 + tx + cx] = t | (palbank << 12)
+
+    def save(self, alloc):
+        tdata = lz77.compress(self.tiles)
+        romspace.store(self.rom, alloc, self.tiles_addr, self.tiles_csize, tdata)
+        m = bytearray()
+        for e in self.entries:
+            m += bytes([e & 0xFF, e >> 8])
+        mdata = rle.compress(m, self.size_type)
+        romspace.store(self.rom, alloc, self.map_addr, self.map_csize, mdata)
+
+
+def bg_dialog_text(rom, screen, area, text, palbank, line_h=16, lines_max=None, x_pad=0, y_pad=0):
+    tx, ty, tw, th = area
+    px = screen.area_pixels(tx, ty, tw, th)
+    bg, outline, fill = detect_colors(px)
+    buf = PixelBuf(tw * 8, th * 8, bg)
+    df = DialogFont(rom)
+    lines = df.wrap(text, tw * 8 - x_pad)
+    if lines_max and len(lines) > lines_max:
+        raise ValueError(f"{text!r} needs {len(lines)} lines, max {lines_max}: {lines}")
+    for i, line in enumerate(lines):
+        df.draw(buf, line, x_pad, y_pad + i * line_h, {1: outline, 2: fill})
+    screen.write_area(tx, ty, buf, palbank)
+    return lines
+
+
+class LZSheet(Sheet):
+    """A 2D (32 tiles wide) sheet that is LZ77 compressed in the ROM."""
+
+    def __init__(self, rom, addr):
+        self.src_rom, self.src_addr = rom, addr
+        self.csize = lz77.compressed_size(rom, addr)
+        data = bytearray(lz77.decompress(rom, addr))
+        super().__init__(data, 0, 32, size=len(data))
+
+    def save(self, alloc):
+        romspace.store(self.src_rom, alloc, self.src_addr, self.csize, lz77.compress(self.rom))
+
+
+def sheet_label(rom, sheet, x, y, w, h, text, align="left", x_pad=0, colors=None, bg=None):
+    """Replace the text inside a box of a sheet, keeping its colours."""
+    if colors is None:
+        b, o, f = detect_colors([[sheet.get(xx, yy) for xx in range(x, x + w)] for yy in range(y, y + h)])
+        bg, colors = b, {1: o, 2: f}
+    _label(rom, sheet, x, y, w, h, text, bg, colors, align, x_pad)
+
+
+# ---------------------------------------------------------------------------
+# Save data reset screen (hold L+R... at boot): BG dialog + OBJ No/Yes
+
+def save_reset(rom, alloc, texts):
+    scr = BGScreen(rom, 0x745350, 0x746880, other_maps=[0x746926])
+    # dialog interior is tiles x 6-24, y 4-12; the original text starts at x=7
+    bg_dialog_text(rom, scr, (7, 4, 17, 6), texts["erase_all"], palbank=2, lines_max=3)
+    scr.save(alloc)
+    obj = LZSheet(rom, 0x745B58)
+    sheet_label(rom, obj, 112, 0, 32, 16, texts["no"], x_pad=8)
+    sheet_label(rom, obj, 144, 0, 24, 16, texts["yes"])
+    sheet_label(rom, obj, 8, 64, 128, 16, texts["are_you_sure"])
+    obj.save(alloc)
+
+
 def apply(rom, base, texts):
+    alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
+    save_reset(rom, alloc, texts)

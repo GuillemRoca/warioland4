@@ -10,3 +10,7 @@ pause_giveup = "Perdràs totes les monedes i els objectes que has recollit en aq
 
 no = "No"
 yes = "Sí"
+
+# Save data reset screen: "Erase all saved game data?" then "Are you sure?"
+erase_all = "Vols esborrar totes les dades desades?"
+are_you_sure = "N'estàs segur?"

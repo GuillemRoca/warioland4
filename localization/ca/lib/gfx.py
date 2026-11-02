@@ -1,5 +1,4 @@
 """GBA 4bpp tile / palette / tilemap helpers."""
-from PIL import Image
 
 
 def bgr555_to_rgb(v):
@@ -34,6 +33,7 @@ def encode_tile(px):
 
 def render_tilemap(tiles, tilemap, pal, width=32, height=None, tile_base=0, transparent=None):
     """tilemap: bytes of u16 entries. pal: list of 256 RGB."""
+    from PIL import Image
     n = len(tilemap) // 2
     height = height or (n // width)
     im = Image.new("RGB", (width * 8, height * 8), transparent or (0, 0, 0))
@@ -55,6 +55,7 @@ def render_tilemap(tiles, tilemap, pal, width=32, height=None, tile_base=0, tran
 
 
 def render_tiles(tiles, pal16, cols=16, scale=1):
+    from PIL import Image
     n = len(tiles) // 32
     rows = (n + cols - 1) // cols
     im = Image.new("RGB", (cols * 9, rows * 9), (255, 0, 255))

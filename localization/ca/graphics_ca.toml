@@ -26,6 +26,7 @@ fs_quit = "SURT"              # QUIT (leave delete mode)
 save = "ARXIU"                # SAVE (label above the A / B file letter)
 hard = "Difícil"              # Hard
 s_hard = "Extrem"             # S-Hard
+delete_question = "Vols esborrar-ho?"   # Delete this data?
 
 # Title screen: PUSH START -> PREM START (START is the button name and is kept)
 push = "PREM"

@@ -34,6 +34,7 @@ tiles, amb espai limitat.
 | Normal | Normal | Dificultat |
 | Hard | Difícil | Dificultat *(gràfic)* |
 | S-Hard (Super Hard) | Extrem | Dificultat *(gràfic)*; "S-Difícil" no hi cabia |
+| Delete this data? | Vols esborrar-ho? | Confirmació d'esborrar un arxiu (espai: 128 px) |
 | Erase all saved game data? | Vols esborrar totes les dades desades? | Pantalla d'esborrat |
 | Are you sure? | N'estàs segur? | |
 | Yes / No | Sí / No | |

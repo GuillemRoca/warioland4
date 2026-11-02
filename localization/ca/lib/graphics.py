@@ -477,6 +477,16 @@ def file_select(rom, alloc, texts):
         obj.fill(x_left, 129, 32, 14, 0)
         layers = [("ink", ink), ("ring8", ring)] + ([("shadow", shadow)] if shadow else [])
         draw_styled(obj, m, x_left + 1 + (30 - len(m[0])) // 2, 131, layers)
+    # Delete confirmation: question on sheet (0..112, 48) + the "?" piece at x=200,
+    # then the "No" (x=112, 32px) and "Yes" (x=144, 40px, text 16px in) boxes
+    q = Canvas(obj, [(0, 0, 112, 16, 0, 48), (112, 0, 16, 16, 200, 48)])
+    q.clear(14)
+    df = DialogFont(rom)
+    if df.width(texts["delete_question"]) > 128:
+        raise ValueError("delete question too wide")
+    df.draw(q, texts["delete_question"], 0, 0, {1: 1, 2: 2})
+    _label(rom, obj, 112, 48, 32, 16, texts["no"], 14, {1: 1, 2: 2})
+    _label(rom, obj, 144, 48, 40, 16, texts["yes"], 14, {1: 1, 2: 2}, x_pad=16)
     # Difficulty pop-up: 48x16 boxes at x=112 (Normal y=0, Hard y=16, S-Hard y=32)
     for y_top, key, ink in ((16, "hard", 6), (32, "s_hard", 8)):
         obj.fill(112, y_top, 48, 16, 14)

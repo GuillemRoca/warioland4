@@ -1,0 +1,319 @@
+# Catalan translation of the font-encoded strings of Wario Land 4 (USA/Europe).
+#
+# Every entry has the original English text ("en", checked against the ROM before
+# patching) and its Catalan translation ("ca").  Each string occupies a fixed slot of
+# 26 characters; text is centred unless "align" says otherwise.
+#
+# Available characters: A-Z a-z 0-9 space . , ' & ! ? ( ) [ ] - ~
+# plus the Catalan glyphs added by this patch:  à è é í ï ò ó ú ü ç ·
+# (accented capitals are not available in this font).
+
+# Map screen: passage names (pointer table 0x639588, 7 entries)
+[[passage]]
+en = "Entry Passage"
+ca = "Passadís d'Entrada"
+
+[[passage]]
+en = "Emerald Passage"
+ca = "Passadís Maragda"
+
+[[passage]]
+en = "Ruby Passage"
+ca = "Passadís Robí"
+
+[[passage]]
+en = "Topaz Passage"
+ca = "Passadís Topazi"
+
+[[passage]]
+en = "Sapphire Passage"
+ca = "Passadís Safir"
+
+[[passage]]
+en = "Golden Pyramid"
+ca = "Piràmide Daurada"
+
+[[passage]]
+en = "Sound Room"
+ca = "Sala de So"
+
+# Level, boss and shop names (pointer table 0x63A3AC, 6 passages x 6 slots)
+[[level]]
+en = "Hall of Hieroglyphs"
+ca = "Sala dels Jeroglífics"
+
+[[level]]
+en = "Spoiled Rotten"
+ca = "Malcriat Podrit"
+
+[[level]]
+en = "Mini-Game Shop"
+ca = "Botiga de Minijocs"
+
+[[level]]
+en = "Palm Tree Paradise"
+ca = "Paradís de Palmeres"
+
+[[level]]
+en = "Wildflower Fields"
+ca = "Camps de Flors Silvestres"
+
+[[level]]
+en = "Mystic Lake"
+ca = "Llac Místic"
+
+[[level]]
+en = "Monsoon Jungle"
+ca = "Jungla del Monsó"
+
+[[level]]
+en = "Cractus"
+ca = "Cractus"
+
+[[level]]
+en = "The Curious Factory"
+ca = "La Fàbrica Curiosa"
+
+[[level]]
+en = "The Toxic Landfill"
+ca = "L'Abocador Tòxic"
+
+[[level]]
+en = "40 Below Fridge"
+ca = "Nevera a 40 Sota Zero"
+
+[[level]]
+en = "Pinball Zone"
+ca = "Zona de Pinball"
+
+[[level]]
+en = "Cuckoo Condor"
+ca = "Còndor Cucut"
+
+[[level]]
+en = "Toy Block Tower"
+ca = "Torre de Blocs de Joguina"
+
+[[level]]
+en = "The Big Board"
+ca = "El Gran Tauler"
+
+[[level]]
+en = "Doodle Woods"
+ca = "Bosc de Gargots"
+
+[[level]]
+en = "Domino Row"
+ca = "Filera de Dòminos"
+
+[[level]]
+en = "Aerodent"
+ca = "Aerosegador"
+
+[[level]]
+en = "Crescent Moon Village"
+ca = "Poble de la Mitja Lluna"
+
+[[level]]
+en = "Arabian Night"
+ca = "Nit Aràbiga"
+
+[[level]]
+en = "Fiery Cavern"
+ca = "Caverna Ardent"
+
+[[level]]
+en = "Hotel Horror"
+ca = "Hotel de l'Horror"
+
+[[level]]
+en = "Catbat"
+ca = "Gatpenat"
+
+[[level]]
+en = "Golden Passage"
+ca = "Passadís Daurat"
+
+[[level]]
+en = "Golden Diva"
+ca = "Diva Daurada"
+
+# Sound Room: CD titles (pointer table 0x63D8E0, 16 entries)
+[[cd]]
+en = "About That Shepherd"
+ca = "Sobre aquell pastor"
+
+[[cd]]
+en = "Things That Never Change"
+ca = "Coses que mai canvien"
+
+[[cd]]
+en = "Tomorrow's Blood Pressure"
+ca = "Pressió arterial de demà"
+
+[[cd]]
+en = "Beyond the Headrush"
+ca = "Més enllà del vertigen"
+
+[[cd]]
+en = "Driftwood & the Island Dog"
+ca = "El tronc i el gos illenc"
+
+[[cd]]
+en = "The Judge's Feet"
+ca = "Els peus del jutge"
+
+[[cd]]
+en = "The Moon's Lamppost"
+ca = "El fanal de la lluna"
+
+[[cd]]
+en = "Soft Shell"
+ca = "Closca tova"
+
+[[cd]]
+en = "So Sleepy"
+ca = "Tinc tanta son"
+
+[[cd]]
+en = "The Short Futon"
+ca = "El futon curt"
+
+[[cd]]
+en = "Avocado Song"
+ca = "Cançó de l'alvocat"
+
+[[cd]]
+en = "Mr. Fly"
+ca = "El senyor Mosca"
+
+[[cd]]
+en = "Yesterday's Words"
+ca = "Paraules d'ahir"
+
+[[cd]]
+en = "The Errand"
+ca = "L'encàrrec"
+
+[[cd]]
+en = "You and Your Shoes"
+ca = "Tu i les teves sabates"
+
+[[cd]]
+en = "Mr. Ether & Planaria"
+ca = "L'èter i la planària"
+
+# Mini-game shop messages (pointer table 0x6E32F4, 12 entries, left aligned)
+[[minigame]]
+en = "Win medals in mini-games."
+ca = "Guanya medalles jugant!"
+
+[[minigame]]
+en = "Wario's Homerun Derby"
+ca = "Home Runs de Wario"
+
+[[minigame]]
+en = "The Wario Hop"
+ca = "El Salt de Wario"
+
+[[minigame]]
+en = "Wario's Roulette"
+ca = "La Ruleta de Wario"
+
+[[minigame]]
+en = "You need more coins."
+ca = "Et calen més monedes."
+
+[[minigame]]
+en = "Under construction."
+ca = "En construcció."
+
+[[minigame]]
+en = "Want to play some more?"
+ca = "Vols jugar una mica més?"
+
+[[minigame]]
+en = "Come back after saving up."
+ca = "Estalvia i torna més tard."
+
+[[minigame]]
+en = "Come again."
+ca = "Torna aviat."
+
+[[minigame]]
+en = "Welcome back!"
+ca = "Benvingut de nou!"
+
+[[minigame]]
+en = "You got a new high score!"
+ca = "Has fet un nou rècord!"
+
+[[minigame]]
+en = "Don't you want to play?"
+ca = "No vols jugar?"
+
+# Item shop messages (pointer table 0x730150, 15 entries, left aligned)
+[[itemshop]]
+en = "Leaving without buying?"
+ca = "Te'n vas sense comprar?"
+
+[[itemshop]]
+en = "That's an Apple Bomb."
+ca = "Això és una Poma Bomba."
+
+[[itemshop]]
+en = "That's a Blast Cannon."
+ca = "Això és un Canó Explosiu."
+
+[[itemshop]]
+en = "That's Vizorman."
+ca = "Això és en Vizorman."
+
+[[itemshop]]
+en = "That's a Bugle."
+ca = "Això és una Corneta."
+
+[[itemshop]]
+en = "That's a Black Dog."
+ca = "Això és un Gos Negre."
+
+[[itemshop]]
+en = "Those are the Large Lips."
+ca = "Són els Llavis Grossos."
+
+[[itemshop]]
+en = "That's a Big Fist."
+ca = "Això és un Puny Gegant."
+
+[[itemshop]]
+en = "That's a Black Dragon."
+ca = "Això és un Drac Negre."
+
+[[itemshop]]
+en = "Here's a smile for you!"
+ca = "Té, un somriure per a tu!"
+
+[[itemshop]]
+en = "Welcome to the Item Shop."
+ca = "Benvingut a la botiga."
+
+[[itemshop]]
+en = "You need more medals."
+ca = "Et calen més medalles."
+
+[[itemshop]]
+en = "Thank you!"
+ca = "Moltes gràcies!"
+
+[[itemshop]]
+en = "Go play some mini-games."
+ca = "Ves a jugar als minijocs."
+
+[[itemshop]]
+en = "Hmph!"
+ca = "Hmpf!"
+
+# File select: empty save slot
+[[filesel]]
+en = "NO  DATA"
+ca = "SENSE DADES"

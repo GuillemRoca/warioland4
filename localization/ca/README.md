@@ -70,7 +70,12 @@ La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
 passadissos (també la Piràmide Daurada i el Passadís Daurat), totes les sales
 dels 18 nivells (carregades una per una a l'emulador),
 caps (incloent-hi el temps esgotat), botigues, els tres minijocs de principi a
-fi, Sala de So, final i crèdits.
+fi, Sala de So, final i crèdits. A cada sala, Wario s'ha passejat per una
+graella de punts perquè la càmera mostrés la decoració única (rètols, grafits,
+plafons): 4.563 grups de decoració s'han capturat en pantalla i revisat; els
+615 restants queden fora de l'abast de la càmera i el joc no els mostra mai, i
+uns 485 de capes amb paral·laxi s'han revisat a partir de la renderització de
+la sala.
 
 ## Regenerar el pedaç
 

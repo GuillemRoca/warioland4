@@ -207,6 +207,8 @@ columnes que el vers original en japonès romanitzat.
 | GET! | TEU! | Rètol d'objecte *(gràfic)* |
 | NEW! | NOU! | Insígnies de la paret *(gràfic)* |
 | GET A GOAL | CAP A LA META | Estrelles de la paret *(gràfic, tres línies)* |
+| GET A GOAL | A LA META! | Blocs de joguina amb lletres, sala de la meta *(rajoles animades)* |
+| FREE | LLIURE | Pantalleta sota el rètol TEU! *(rajoles animades, en dues línies: LLIU / RE)* |
 
 ## Sala dels Jeroglífics
 

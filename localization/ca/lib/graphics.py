@@ -2238,6 +2238,162 @@ def _tileset_placed_blocks(rom, fg):
     return placed
 
 
+# ---------------------------------------------------------------------------
+# The Big Board, goal room: a row of ten toy letter blocks spelling GET A GOAL.
+# They are animated tiles (slots 6-15 of tileset 91, animation ids 0xF9-0x102,
+# used by no other tileset and placed only in that row): four frames each,
+# the letter's colour (12-15) cycling, one cell later per letter.  Cells are
+# redrawn in place: '#' letter colour, 's' the dark edge (6) of the original
+# letters, '.' the block's yellow (2); rows 3-12, columns 2-13 of each block.
+
+BOARD_LETTER_IDS = range(0xF9, 0x103)
+BOARD_LETTERS = {
+    "A": ["..ssssssss..", ".s########s.", ".##########.", ".###....###.", ".###....###.",
+          ".###ssss###.", ".##########.", ".###....###.", ".###....###.", ".###....###."],
+    "L": [".ssss.......", ".####.......", ".####.......", ".####.......", ".####.......",
+          ".####.......", ".####ssssss.", ".##########.", ".##########.", ".##########."],
+    "E": [".ssssssssss.", ".s#########.", ".s#########.", ".s##........", ".s##sssss...",
+          ".s#######...", ".s##........", ".s##sssssss.", ".s#########.", ".s#########."],
+    "T": [".ssssssssss.", ".##########.", ".##########.", "....####....", "....####....",
+          "....####....", "....####....", "....####....", "....####....", "....####...."],
+    "M": [".sss....sss.", ".###s..s###.", ".####ss####.", ".##########.", ".###.##.###.",
+          ".###....###.", ".###....###.", ".###....###.", ".###....###.", ".###....###."],
+    "!": ["....ssss....", "....####....", "....####....", "....####....", "....####....",
+          "....####....", "............", "....ssss....", "....####....", "....####...."],
+    " ": ["............"] * 10,
+}
+
+
+def big_board_letters(rom, text):
+    if len(text) != len(BOARD_LETTER_IDS):
+        raise ValueError(f"the letter row has {len(BOARD_LETTER_IDS)} blocks")
+    order = 0
+    for cell, (aid, ch) in enumerate(zip(BOARD_LETTER_IDS, text)):
+        hdr = 0x3F7828 + 8 * aid
+        if rom[hdr] != 1 or rom[hdr + 2] != 4:
+            raise ValueError(f"unexpected animated tile header {aid:#x}")
+        ptr = struct.unpack_from("<I", rom, hdr + 4)[0] - ROM_BASE
+        art = BOARD_LETTERS[ch]
+        phase = order % 4
+        if ch != " ":
+            order += 1
+        for k in range(4):
+            px = [[0] * 16 for _ in range(16)]
+            for q in range(4):
+                t = gfx.tile_pixels(rom[ptr + 128 * k + 32 * q:ptr + 128 * k + 32 * q + 32], 0)
+                for y in range(8):
+                    for x in range(8):
+                        px[8 * (q // 2) + y][8 * (q % 2) + x] = t[y][x]
+            if px[0][1] != 1 or px[2][2] != 3 or px[13][13] != 4:
+                raise ValueError(f"unexpected letter block frame {aid:#x}/{k}")
+            ink = 12 + (phase - k) % 4
+            for r, line in enumerate(art):
+                for c, v in enumerate(line):
+                    px[3 + r][2 + c] = {".": 2, "s": 6, "#": ink}[v]
+            for q in range(4):
+                tile = gfx.encode_tile([px[8 * (q // 2) + y][8 * (q % 2):8 * (q % 2) + 8] for y in range(8)])
+                rom[ptr + 128 * k + 32 * q:ptr + 128 * k + 32 * q + 32] = tile
+
+
+# The Big Board: the little screen under the "TEU!" signs (animation 0x38,
+# played once in room 4 and stopping on its last frame; 0x39 shares the data
+# but only loops the map frames 0-2).  Frames 7-9 show FREE as a bold F next
+# to a green box over REE, in colour 13, 8 and finally 2 on white (15); frames
+# 5-6 are the wipe that brings it in.  The word is redrawn as two lines of
+# thin 3x5 capitals on the white screen (rows 2-6 and 8-12, columns 2-14).
+
+BOARD_FREE_DATA = 0x627568
+BOARD_FREE_INK = {7: 0xD, 8: 0x8, 9: 0x2}
+SIGN_THIN5 = bitmapfonts._parse("""
+[L]
+#..
+#..
+#..
+#..
+###
+[I]
+#
+#
+#
+#
+#
+[U]
+#.#
+#.#
+#.#
+#.#
+###
+[R]
+##.
+#.#
+##.
+#.#
+#.#
+[E]
+###
+#..
+##.
+#..
+###
+""")
+
+
+def _anim_frame(rom, ptr, k):
+    px = [[0] * 16 for _ in range(16)]
+    for q in range(4):
+        t = gfx.tile_pixels(rom[ptr + 128 * k + 32 * q:ptr + 128 * k + 32 * q + 32], 0)
+        for y in range(8):
+            for x in range(8):
+                px[8 * (q // 2) + y][8 * (q % 2) + x] = t[y][x]
+    return px
+
+
+def _anim_store(rom, ptr, k, px):
+    for q in range(4):
+        rom[ptr + 128 * k + 32 * q:ptr + 128 * k + 32 * q + 32] = gfx.encode_tile(
+            [px[8 * (q // 2) + y][8 * (q % 2):8 * (q % 2) + 8] for y in range(8)])
+
+
+def big_board_free_sign(rom, text):
+    for aid in (0x38, 0x39):
+        if struct.unpack_from("<I", rom, 0x3F7828 + 8 * aid + 4)[0] - ROM_BASE != BOARD_FREE_DATA:
+            raise ValueError("unexpected FREE screen animation")
+    ptr = BOARD_FREE_DATA
+    f9 = _anim_frame(rom, ptr, 9)
+    if f9[2][2] != 8 or f9[2][8] != 0xA or f9[10][2] != 2 or f9[7][5] != 0xF:
+        raise ValueError("unexpected FREE screen frame")
+    lines = text.split("/")
+    if len(lines) != 2:
+        raise ValueError("the FREE screen takes two lines separated by /")
+    # wipe frames: keep the border and the moving bar, drop the letter fragments
+    for k in (5, 6):
+        px = _anim_frame(rom, ptr, k)
+        for y in range(2, 13):
+            for x in range(2, 15):
+                if (k == 5 and x == 3) or (k == 6 and x == 5):
+                    continue
+                px[y][x] = 5
+        _anim_store(rom, ptr, k, px)
+    for k, ink in BOARD_FREE_INK.items():
+        px = _anim_frame(rom, ptr, k)
+        for y in range(2, 13):
+            for x in range(2, 15):
+                px[y][x] = 0xF
+        for line, top in zip(lines, (2, 8)):
+            glyphs = [SIGN_THIN5[c] for c in line]
+            w = sum(len(g[0]) for g in glyphs) + len(glyphs) - 1
+            if w > 13:
+                raise ValueError(f"FREE screen line {line!r} too wide")
+            x = 2 + (13 - w) // 2
+            for g in glyphs:
+                for r, row in enumerate(g):
+                    for c, v in enumerate(row):
+                        if v:
+                            px[top + r][x + c] = ink
+                x += len(g[0]) + 1
+        _anim_store(rom, ptr, k, px)
+
+
 def hall_panels(rom, texts):
     f = struct.unpack_from("<9I", rom, 0x3F2298 + 36 * HALL_FG_TILESET)
     fg, map16 = f[0] - ROM_BASE, f[5] - ROM_BASE
@@ -2311,3 +2467,5 @@ def apply(rom, base, texts):
     nintendo_presents(rom, alloc, texts["nintendo_presents"])
     cd_covers(rom, texts)
     hall_panels(rom, texts)
+    big_board_letters(rom, texts["board_letters"])
+    big_board_free_sign(rom, texts["board_free"])

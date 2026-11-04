@@ -54,8 +54,9 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
     portada del karaoke);
   - logotip inicial: "Nintendo Presenta";
   - El Gran Tauler: caselles "INICI" i "META" del tauler (i les seves
-    versions en sprite), rètols "TEU!", insígnies "NOU!" i les estrelles
-    "CAP A LA META";
+    versions en sprite), rètols "TEU!", insígnies "NOU!", les estrelles
+    "CAP A LA META", els blocs de joguina amb lletres de la sala de la meta
+    ("A LA META!", animats) i la pantalleta "LLIURE" sota el rètol "TEU!";
   - Sala dels Jeroglífics: els plafons del tutorial "Va!" i "CLAU";
   - Zona de Pinball: les onomatopeies pintades a la paret, adaptades a la
     grafia dels còmics en català ("BRRUM!", "BRM", "NYIIIIIC").
@@ -72,12 +73,15 @@ La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
 passadissos (també la Piràmide Daurada i el Passadís Daurat), totes les sales
 dels 18 nivells (carregades una per una a l'emulador),
 caps (incloent-hi el temps esgotat), botigues, els tres minijocs de principi a
-fi, Sala de So, final i crèdits. A cada sala, Wario s'ha passejat per una
-graella de punts perquè la càmera mostrés la decoració única (rètols, grafits,
-plafons): 4.563 grups de decoració s'han capturat en pantalla i revisat; els
-615 restants queden fora de l'abast de la càmera i el joc no els mostra mai, i
-uns 485 de capes amb paral·laxi s'han revisat a partir de la renderització de
-la sala.
+fi (amb el temps esgotat, el rècord i els missatges de resultat), Sala de So
+(inclòs el karaoke), final i crèdits. A cada sala, Wario s'ha passejat per una
+graella de punts, i després s'ha portat la càmera a cada decoració única
+(rètols, grafits, plafons) de les tres capes: dels 5.662 grups de decoració,
+5.266 s'han capturat en pantalla i revisat, i els 396 restants queden fora de
+la zona que la càmera pot mostrar (vores de la sala, límits de càmera, o capes
+de fons fixes), mesurada portant Wario a tots els extrems de cada sala. També
+s'han revisat en pantalla els fons de les 226 sales (53 imatges diferents) i
+les 209 animacions de rajoles dels conjunts de rajoles.
 
 ## Regenerar el pedaç
 

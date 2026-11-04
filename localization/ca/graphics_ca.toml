@@ -36,6 +36,10 @@ nintendo_presents = "Presenta"
 # Hall of Hieroglyphs tutorial panels: "Go!" (capital + lowercase + !) and "KEY"
 hall_go = "Va!"
 hall_key = "CLAU"
+# The Big Board goal room: ten toy letter blocks, GET A GOAL (spaces are blank blocks)
+board_letters = "A LA META!"
+# The Big Board: the small screen under the TEU! sign, FREE (two lines split by /)
+board_free = "LLIU/RE"
 # Title and final screens: PUSH START -> PREM A (both screens accept A as well as START)
 push = "PREM"
 push_button = "A"

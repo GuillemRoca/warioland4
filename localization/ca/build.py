@@ -15,7 +15,7 @@ import tomllib
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from lib import bps, font, graphics  # noqa: E402
+from lib import bps, font, graphics, romspace  # noqa: E402
 
 BASE_MD5 = "5fe47355a33e3fabec2a1607af88a404"
 ROM_BASE = 0x08000000
@@ -29,6 +29,20 @@ STRING_TABLES = {
     "itemshop": (0x730150, 15),
     "karaoke": (0x63D948, 13),
 }
+# Japanese-language string tables (gLanguage = 1, which this ROM never selects:
+# the save code always sets 0).  English table -> Japanese table, entry count.
+# Their strings are overwritten with the Catalan ones and every pointer to a
+# Japanese table is redirected to the Catalan one, so not even the Japanese
+# mode keeps Japanese text.
+JAPANESE_TABLES = [
+    (0x639588, 0x63956C, 7),     # passages
+    (0x63A3AC, 0x63A31C, 36),    # levels, bosses, shops
+    (0x6E32F4, 0x6E32C4, 12),    # mini-game shop
+    (0x730150, 0x730114, 15),    # item shop
+    (0x63D8E0, 0x63D8A0, 16),    # CD titles
+    (0x63D948, 0x63D920, 10),    # karaoke lyrics (the Japanese song has 10 lines)
+]
+JAPANESE_SINGLES = [(0x6D3226, 0x6D3108), (0x74299E, 0x7429B8)]   # karaoke title, NO DATA
 # Literal pool entry in the Sound Room code that points at the karaoke song title
 KARAOKE_TITLE_POINTER = 0x873F4
 # Karaoke: the song lights lyric columns 1..N one at a time (recorded in-game);
@@ -82,6 +96,24 @@ def apply_strings(rom, strings):
     return count + 2
 
 
+def apply_japanese_mode(rom):
+    """Overwrite the Japanese-mode strings with the Catalan ones."""
+    n = 0
+    for en, jp, count in JAPANESE_TABLES:
+        for i in range(count):
+            a, b = read_ptr(rom, en + 4 * i), read_ptr(rom, jp + 4 * i)
+            if a is None or b is None or a == b:
+                continue
+            rom[b:b + 26] = rom[a:a + 26]
+            n += 1
+        romspace.repoint(rom, jp, en)
+    for en, jp in JAPANESE_SINGLES:
+        rom[jp:jp + 26] = rom[en:en + 26]
+        romspace.repoint(rom, jp, en)
+        n += 1
+    return n
+
+
 def check_karaoke(lines):
     if len(lines) != len(KARAOKE_COLUMNS):
         raise SystemExit("[karaoke] expected 13 lyric lines")
@@ -107,6 +139,7 @@ def build(base_path, out_rom, out_bps):
         strings = tomllib.load(f)
     n = apply_strings(rom, strings)
     print(f"strings: {n} slots translated")
+    print(f"japanese-mode strings: {apply_japanese_mode(rom)} slots overwritten with Catalan")
 
     with open(os.path.join(HERE, "graphics_ca.toml"), "rb") as f:
         gtexts = tomllib.load(f)

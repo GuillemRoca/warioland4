@@ -70,7 +70,10 @@ l'abecedari (amb una Ç afegida) i la nota legal "© 2001 Nintendo". Fins i tot
 els gràfics en anglès que la versió USA/Europa no mostra mai (el selector
 d'idioma de la versió japonesa i el seu menú "Start / Cancel", "Press PUSH")
 s'han passat al català: "Anglès", "Japonès", "Comença", "Torna", "Prem",
-"PREM".
+"PREM". També les cadenes de text del mode japonès (noms de passadissos,
+nivells, CD, botigues, minijocs, karaoke i "SENSE DADES") s'han sobreescrit amb
+les catalanes, i el joc hi apunta a les taules catalanes: posant el joc en mode
+japonès, els noms i missatges surten igualment en català.
 
 La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
 passadissos (també la Piràmide Daurada i el Passadís Daurat), totes les sales

@@ -2089,7 +2089,8 @@ CD_SHEET = 0x6B2A88
 CD_COVERS = {"moon": (12, 6), "soft_shell": (12, 12), "sleepy": (12, 18),
              "avocado": (16, 0), "fly": (16, 6), "shepherd": (8, 0),
              "never_change": (8, 6), "headrush": (8, 18),
-             "karaoke1": (20, 12), "karaoke2": (20, 18), "karaoke3": (20, 24)}
+             "karaoke1": (20, 12), "karaoke2": (20, 18), "karaoke3": (20, 24),
+             "alphabet": (16, 12)}
 
 
 def _cd_canvas(rom, key):
@@ -2198,6 +2199,14 @@ def cd_covers(rom, texts):
                 cv.set(x, y, 9)
     w = sum(len(f.CD_THIN6[c][0]) for c in t["headrush"]) + len(t["headrush"]) - 1
     _cd_text(cv, f.CD_THIN6, t["headrush"], 10 + (33 - w) // 2, 3, 1)
+    # "Yesterday's Words": a chart of capitals (no words); the magenta C (6)
+    # gets a cedilla in the free background row (8) under it, making it Ç
+    cv = _cd_canvas(rom, "alphabet")
+    if cv.get(23, 7) != 6 or cv.get(25, 7) != 6 or cv.get(24, 8) != 8 or cv.get(25, 8) != 8:
+        raise ValueError("unexpected alphabet cover")
+    if t["alphabet_cedilla"]:
+        cv.set(24, 8, 6)
+        cv.set(25, 8, 6)
     # karaoke cat (three frames): grey caption (4) at the bottom left
     for key in ("karaoke1", "karaoke2", "karaoke3"):
         cv = _cd_canvas(rom, key)

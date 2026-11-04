@@ -162,8 +162,9 @@ tiles, amb espai limitat.
 Portades dels CD *(gràfic)*: MOON → LLUNA, SOFT SHELL → CLOSCA, SLEEPY → SON,
 AVOCADO! → ALVOCAT!, FLY → MOSCA, ATS (*About That Shepherd*) → SAP (*Sobre
 Aquell Pastor*), カワラナイモノ ("coses que no canvien") → ETERNES, タチクラミ
-("vertigen") → VERTIGEN, i la signatura en hiragana sota el gat de la portada
-del karaoke → MIAU.
+("vertigen") → VERTIGEN, la signatura en hiragana sota el gat de la portada
+del karaoke → MIAU, i el cartell de l'abecedari (*Yesterday's Words*) guanya
+una Ç.
 
 ## Karaoke (Sala de So)
 

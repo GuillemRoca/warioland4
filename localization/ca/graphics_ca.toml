@@ -129,6 +129,7 @@ shepherd = "SAP"          # ATS = About That Shepherd -> Sobre Aquell Pastor
 never_change = "ETERNES"  # カワラナイモノ (Things That Never Change)
 headrush = "VERTIGEN"     # タチクラミ (Beyond the Headrush)
 karaoke = "MIAU"          # hiragana caption under the karaoke cat
+alphabet_cedilla = true   # alphabet chart cover: C -> Ç
 
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

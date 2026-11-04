@@ -1875,6 +1875,45 @@ CD_TINY4 = _parse("""
 #
 #
 """)
+# Sound Room "KARAOKE" button: 5-row capitals like the original lettering.
+SR_BUTTON5 = _parse("""
+[C]
+.###
+#...
+#...
+#...
+.###
+[A]
+.##.
+#..#
+####
+#..#
+#..#
+[N]
+#..#
+##.#
+#.##
+#..#
+#..#
+[T]
+###
+.#.
+.#.
+.#.
+.#.
+[E]
+####
+#...
+###.
+#...
+####
+[M]
+#...#
+##.##
+#.#.#
+#...#
+#...#
+""")
 # "About That Shepherd": thick 4x5 capitals like the cover's own ATS (A and S
 # are the original letters).
 CD_BOLD5 = _parse("""

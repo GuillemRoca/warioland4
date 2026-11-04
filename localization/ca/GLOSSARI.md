@@ -168,6 +168,8 @@ una Ç.
 
 ## Karaoke (Sala de So)
 
+Botó *(gràfic)*: KARAOKE → CANTEM.
+
 Es desbloqueja amb la puntuació màxima als 18 nivells. La cançó il·lumina la
 lletra columna a columna, de manera que cada vers català ocupa les mateixes
 columnes que el vers original en japonès romanitzat.

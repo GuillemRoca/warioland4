@@ -51,7 +51,8 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   - Sala de So: les portades dels CD amb lletres ("LLUNA", "CLOSCA", "SON",
     "ALVOCAT!", "MOSCA", "SAP" en lloc de les inicials "ATS", "ETERNES" i
     "VERTIGEN" en lloc dels títols en katakana, "MIAU" sota el gat de la
-    portada del karaoke, i una "Ç" al cartell de l'abecedari);
+    portada del karaoke, una "Ç" al cartell de l'abecedari, i el botó
+    "KARAOKE" passa a "CANTEM");
   - logotip inicial: "Nintendo Presenta";
   - El Gran Tauler: caselles "INICI" i "META" del tauler (i les seves
     versions en sprite), rètols "TEU!", insígnies "NOU!", les estrelles
@@ -64,16 +65,18 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
 
 No queda cap paraula anglesa ni japonesa visible. Només es mantenen, perquè no
 són text per traduir, els noms propis (Wario, Nintendo, el personal dels
-crèdits), la paraula "karaoke" (que també és catalana), les lletres A, B i R
-dels pictogrames dels botons de la consola, les lletres soltes del cartell de
+crèdits), les lletres A, B i R dels pictogrames dels botons de la consola, les lletres soltes del cartell de
 l'abecedari (amb una Ç afegida) i la nota legal "© 2001 Nintendo". Fins i tot
 els gràfics en anglès que la versió USA/Europa no mostra mai (el selector
 d'idioma de la versió japonesa i el seu menú "Start / Cancel", "Press PUSH")
 s'han passat al català: "Anglès", "Japonès", "Comença", "Torna", "Prem",
 "PREM". També les cadenes de text del mode japonès (noms de passadissos,
 nivells, CD, botigues, minijocs, karaoke i "SENSE DADES") s'han sobreescrit amb
-les catalanes, i el joc hi apunta a les taules catalanes: posant el joc en mode
-japonès, els noms i missatges surten igualment en català.
+les catalanes, i el joc hi apunta a les taules catalanes. A més, les 41
+lectures de l'idioma al codi (`gLanguage`) retornen sempre 0: cap camí del
+codi no pot triar ja els gràfics de la versió japonesa (escenes, pausa,
+resultats...), que queden com a dades mortes. Comprovat posant l'idioma a 1 a la
+memòria: pausa, selecció d'arxiu, mapa, botigues i karaoke surten en català.
 
 La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
 passadissos (també la Piràmide Daurada i el Passadís Daurat), totes les sales

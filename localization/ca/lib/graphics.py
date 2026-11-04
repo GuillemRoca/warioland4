@@ -2108,6 +2108,10 @@ CD_COVERS = {"moon": (12, 6), "soft_shell": (12, 12), "sleepy": (12, 18),
              "alphabet": (16, 12)}
 
 
+def cv_sheet_get(rom, x, y):
+    return Sheet(rom, CD_SHEET, 32, 24).get(x, y)
+
+
 def _cd_canvas(rom, key):
     r, c = CD_COVERS[key]
     return Canvas(Sheet(rom, CD_SHEET, 32, 24), [(0, 0, 48, 32, c * 8, r * 8)])
@@ -2222,6 +2226,28 @@ def cd_covers(rom, texts):
     if t["alphabet_cedilla"]:
         cv.set(24, 8, 6)
         cv.set(25, 8, 6)
+    # the "KARAOKE" button (two 64x16 states at sheet x=128 and x=192, row 48):
+    # letters (B on 1, then 1 on B) between the crowns, rows 54-58, x 15-49
+    for x0, ink, paper in ((128, 0xB, 1), (192, 1, 0xB)):
+        if cv_sheet_get(rom, x0 + 15, 54) != ink or cv_sheet_get(rom, x0 + 16, 54) != paper:
+            raise ValueError("unexpected KARAOKE button")
+    word = t["karaoke_button"]
+    glyphs = [f.SR_BUTTON5[c] for c in word]
+    w = sum(len(g[0]) for g in glyphs) + len(glyphs) - 1
+    if w > 35:
+        raise ValueError(f"karaoke button text too wide: {word!r}")
+    sheet = Sheet(rom, CD_SHEET, 32, 24)
+    for x0, ink, paper in ((128, 0xB, 1), (192, 1, 0xB)):
+        for y in range(54, 59):
+            for x in range(15, 50):
+                sheet.set(x0 + x, y, paper)
+        x = x0 + 15 + (35 - w) // 2
+        for g in glyphs:
+            for r, row in enumerate(g):
+                for c, v in enumerate(row):
+                    if v:
+                        sheet.set(x + c, 54 + r, ink)
+            x += len(g[0]) + 1
     # karaoke cat (three frames): grey caption (4) at the bottom left
     for key in ("karaoke1", "karaoke2", "karaoke3"):
         cv = _cd_canvas(rom, key)

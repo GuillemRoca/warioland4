@@ -96,6 +96,42 @@ def apply_strings(rom, strings):
     return count + 2
 
 
+GLANGUAGE = 0x03000016
+GLANGUAGE_INDIRECT_READS = [0x88A4A]   # pause screen: address kept in r9, read later
+
+
+def force_language_zero(rom):
+    """Make every read of gLanguage yield 0 (USA/Europe).
+
+    The save code already stores 0, but the Japanese branches stay reachable in
+    principle; replacing each "ldrb rY, [rX, #0]" that reads gLanguage with
+    "mov rY, #0" makes the Japanese-release assets dead data that no code path
+    can select."""
+    reads = []
+    for a in range(0, 0x100000, 2):
+        h = struct.unpack_from("<H", rom, a)[0]
+        if h >> 11 != 0b01001:
+            continue
+        rd, lit = (h >> 8) & 7, ((a + 4) & ~3) + (h & 0xFF) * 4
+        if struct.unpack_from("<I", rom, lit)[0] != GLANGUAGE:
+            continue
+        for k in range(1, 7):
+            h2 = struct.unpack_from("<H", rom, a + 2 * k)[0]
+            if h2 >> 11 == 0b01111 and (h2 >> 6) & 31 == 0 and (h2 >> 3) & 7 == rd:
+                reads.append(a + 2 * k)
+                break
+    reads += GLANGUAGE_INDIRECT_READS
+    if len(reads) != 41:
+        raise SystemExit(f"expected 41 reads of gLanguage, found {len(reads)}")
+    for a in reads:
+        h = struct.unpack_from("<H", rom, a)[0]
+        nxt = struct.unpack_from("<H", rom, a + 2)[0]
+        if h >> 11 != 0b01111 or (nxt >> 12) == 0xD:
+            raise SystemExit(f"unexpected gLanguage read at {a:#x}")
+        struct.pack_into("<H", rom, a, 0x2000 | ((h & 7) << 8))
+    return len(reads)
+
+
 def apply_japanese_mode(rom):
     """Overwrite the Japanese-mode strings with the Catalan ones."""
     n = 0
@@ -140,6 +176,7 @@ def build(base_path, out_rom, out_bps):
     n = apply_strings(rom, strings)
     print(f"strings: {n} slots translated")
     print(f"japanese-mode strings: {apply_japanese_mode(rom)} slots overwritten with Catalan")
+    print(f"language reads forced to 0: {force_language_zero(rom)}")
 
     with open(os.path.join(HERE, "graphics_ca.toml"), "rb") as f:
         gtexts = tomllib.load(f)

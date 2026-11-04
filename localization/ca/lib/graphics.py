@@ -1601,7 +1601,54 @@ BOARD_START = {"tiles": [(0, 0, 609), (0, 8, 628), (8, 0, 610), (16, 0, 611), (8
                "big": (2, 4, 5, 8), "small": (8, 6, 16, 6), "ink": 0xC, "shadow": 0x6, "paper": 0xF}
 BOARD_GOAL = {"tiles": [(0, 0, 612), (8, 0, 613), (16, 0, 614), (0, 8, 631), (8, 8, 632), (16, 8, 633)],
               "big": (2, 2, 8, 8), "small": (10, 2, 13, 4), "ink": 0xF, "shadow": 0x9, "paper": 0x2}
+BOARD_SPRITES = 0x3654F0                    # sprite sheet row holding both squares
+BOARD_START_SPRITE = {"big": (1, 6, 6, 10), "small": (7, 9, 16, 7), "ink": 0xC, "shadow": 0x6, "paper": 0xF}
+BOARD_GOAL_SPRITE = {"big": (26, 3, 8, 13), "small": (34, 3, 13, 6), "ink": 0xF, "shadow": 0x2, "paper": 0x9}
 BOARD_GLYPHS = bitmapfonts._parse("""
+[I9]
+#####
+#####
+.###.
+.###.
+.###.
+.###.
+.###.
+#####
+#####
+[M12]
+##...##
+###.###
+#######
+##.#.##
+##...##
+##...##
+##...##
+##...##
+##...##
+##...##
+##...##
+##...##
+[E6]
+####
+##..
+##..
+###.
+##..
+####
+[T6]
+###
+.#.
+.#.
+.#.
+.#.
+.#.
+[A6]
+.##.
+##.#
+##.#
+####
+##.#
+##.#
 [I5]
 #####
 #####
@@ -1659,9 +1706,7 @@ BOARD_GLYPHS = bitmapfonts._parse("""
 """)
 
 
-def _board_square(rom, spec, big, small, small_gap):
-    sheet = Sheet(rom, BIG_BOARD_FG, 32, 21)
-    canvas = Canvas(sheet, [(cx, cy, 8, 8, (t % 32) * 8, (t // 32) * 8) for cx, cy, t in spec["tiles"]])
+def _board_square(canvas, spec, big, small, small_gap):
     ink, shadow, paper = spec["ink"], spec["shadow"], spec["paper"]
     areas = []
     for (x0, y0, w, h), glyphs, gap in ((spec["big"], [big], 0), (spec["small"], small, small_gap)):
@@ -1688,8 +1733,17 @@ def big_board_signs(rom, texts):
     if (texts["board_start"], texts["board_goal"]) != ("INICI", "META"):
         raise ValueError("only INICI / META are drawn for The Big Board squares")
     g = BOARD_GLYPHS
-    _board_square(rom, BOARD_START, g["I5"], [g["N"], g["I"], g["C"], g["I"]], 1)
-    _board_square(rom, BOARD_GOAL, g["M7"], [g["E4"], g["T3"], g["A4"]], 1)
+    sheet = Sheet(rom, BIG_BOARD_FG, 32, 21)
+    for spec, big, small in ((BOARD_START, g["I5"], [g["N"], g["I"], g["C"], g["I"]]),
+                             (BOARD_GOAL, g["M7"], [g["E4"], g["T3"], g["A4"]])):
+        canvas = Canvas(sheet, [(cx, cy, 8, 8, (t % 32) * 8, (t // 32) * 8) for cx, cy, t in spec["tiles"]])
+        _board_square(canvas, spec, big, small, 1)
+    # the same squares as 24x16 sprites (drawn a little taller), raw OBJ sheet
+    canvas = Canvas(Sheet(rom, BOARD_SPRITES, 32, 2), [(0, 0, 48, 16, 0, 0)])
+    if canvas.get(0, 1) != 1 or canvas.get(24, 1) != 1 or canvas.get(25, 1) != 4:
+        raise ValueError("unexpected Big Board square sprites")
+    _board_square(canvas, BOARD_START_SPRITE, g["I9"], [g["N"], g["I"], g["C"], g["I"]], 1)
+    _board_square(canvas, BOARD_GOAL_SPRITE, g["M12"], [g["E6"], g["T6"], g["A6"]], 1)
 
 
 # Decorations drawn with the same tileset: GET A GOAL starbursts and NEW!

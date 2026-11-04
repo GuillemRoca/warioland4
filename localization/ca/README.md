@@ -66,9 +66,11 @@ No queda cap paraula anglesa ni japonesa visible. Només es mantenen, perquè no
 són text per traduir, els noms propis (Wario, Nintendo, el personal dels
 crèdits), la paraula "karaoke" (que també és catalana), les lletres A, B i R
 dels pictogrames dels botons de la consola, les lletres soltes del cartell de
-l'abecedari (amb una Ç afegida) i la nota legal "© 2001 Nintendo". Alguns gràfics sense ús a la versió USA/Europa (selector
-d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press PUSH") no es mostren mai i
-no s'han tocat.
+l'abecedari (amb una Ç afegida) i la nota legal "© 2001 Nintendo". Fins i tot
+els gràfics en anglès que la versió USA/Europa no mostra mai (el selector
+d'idioma de la versió japonesa i el seu menú "Start / Cancel", "Press PUSH")
+s'han passat al català: "Anglès", "Japonès", "Comença", "Torna", "Prem",
+"PREM".
 
 La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
 passadissos (també la Piràmide Daurada i el Passadís Daurat), totes les sales

@@ -29,6 +29,13 @@ save = "ARXIU"                # SAVE (label above the A / B file letter)
 hard = "Difícil"              # Hard
 s_hard = "Extrem"             # S-Hard
 delete_question = "Vols esborrar-ho?"   # Delete this data?
+# Japanese release only (never shown here): language picker and Start/Cancel menu
+lang_english = "Anglès"       # ENGLISH (えいご)
+lang_japanese = "Japonès"     # JAPANESE (にほんご)
+fs_start = "Comença"          # Start
+fs_cancel = "Torna"           # Cancel
+fs_press = "Prem"             # Press
+fs_push = "PREM"              # PUSH
 
 # Boot logo "Nintendo Presents" (only Presenta supported)
 nintendo_presents = "Presenta"

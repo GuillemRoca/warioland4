@@ -494,6 +494,16 @@ def file_select(rom, alloc, texts):
         obj.fill(112, y_top, 48, 16, 14)
         m = bitmapfonts.SKEL10.mask(texts[key])
         draw_styled(obj, m, 121, y_top + 4, [("ink", ink), ("ring8", 1)])
+    # Labels of the Japanese release's language picker and Start/Cancel menu,
+    # never shown by this ROM (the language is fixed): relettered anyway so no
+    # English graphic is left.  ENGLISH (えいご) / JAPANESE (にほんご) at y=16/32,
+    # Start / Cancel at y=80, Press at y=80 and PUSH (next to the A icon) at y=96.
+    for x, y, w, key in ((0, 16, 112, "lang_english"), (0, 32, 112, "lang_japanese"),
+                         (96, 80, 50, "fs_start"), (146, 80, 46, "fs_cancel"),
+                         (200, 80, 40, "fs_press"), (200, 96, 40, "fs_push")):
+        if obj.get(x + 3, y + 3) not in (14, 1, 2):
+            raise ValueError(f"unexpected label box at {(x, y)}")
+        _label(rom, obj, x, y, w, 16, texts[key], 14, {1: 1, 2: 2}, align="center")
     obj.save(alloc)
 
     bg = LZSheet(rom, FS_BG_TILES)
@@ -534,6 +544,11 @@ def file_select(rom, alloc, texts):
         for c in range(2, 6):
             if not (c0 <= c <= c1):
                 entries[row * 32 + c] = 0
+    # the BG copy of the language picker labels (row y=160), also never shown
+    if bg.get(3, 163) != 1 or bg.get(4, 164) != 2:
+        raise ValueError("unexpected language labels in the file select BG tiles")
+    _label(rom, bg, 0, 160, 96, 16, texts["lang_english"], 0, {1: 1, 2: 2}, align="center")
+    _label(rom, bg, 96, 160, 112, 16, texts["lang_japanese"], 0, {1: 1, 2: 2}, align="center")
     bg.save(alloc)
     data = bytearray()
     for e in entries:

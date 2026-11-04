@@ -2159,6 +2159,79 @@ def cd_covers(rom, texts):
              shadow=(1, 1, 4, (0xE,)))
 
 
+# ---------------------------------------------------------------------------
+# Hall of Hieroglyphs (tutorial): two carved panels have words, "Go!" (dark G
+# on the panel's light stripe, light "o!" on the dark part) and "KEY" above a
+# key.  Both are map16 pictures of the tileset shared by tilesets 17, 71, 80.
+
+HALL_FG_TILESET = 17
+HALL_GO_BLOCKS = [[386, 385, 448], [392, 393, 474]]
+HALL_KEY_BLOCKS = [[534, 535], [542, 543]]
+
+
+def _tileset_placed_blocks(rom, fg):
+    """Blocks placed in any map16 layer of the rooms whose tileset uses fg tiles."""
+    placed = set()
+    for hdr in range(0x3F4E88, 0x3F7820, 0x2C):
+        f = struct.unpack_from("<9I", rom, 0x3F2298 + 36 * rom[hdr])
+        if f[0] - ROM_BASE != fg:
+            continue
+        for layer in range(3):
+            ptr = struct.unpack_from("<I", rom, hdr + 8 + 4 * layer)[0] - ROM_BASE
+            if not rom[hdr + 1 + layer] & 0x10 or not 0 <= ptr < len(rom):
+                continue
+            w, h = rom[ptr], rom[ptr + 1]
+            data, _, _ = rle.decompress(rom, ptr + 2, header=False)
+            placed |= set(struct.unpack_from("<%dH" % (w * h), data))
+    return placed
+
+
+def hall_panels(rom, texts):
+    f = struct.unpack_from("<9I", rom, 0x3F2298 + 36 * HALL_FG_TILESET)
+    fg, map16 = f[0] - ROM_BASE, f[5] - ROM_BASE
+    writes = {}
+    # Go! -> Va!: the G (8 on 5) becomes V, the o (6 on 3) becomes a, ! stays
+    go = BlockPicture(rom, HALL_GO_BLOCKS, fg=fg, map16=map16)
+    if go.px[4][9] != 8 or go.px[8][19] != 6:
+        raise ValueError("unexpected Go! panel")
+    word = texts["hall_go"]
+    if len(word) != 3 or word[2] != "!":
+        raise ValueError("the Go! panel takes a capital, a lowercase letter and !")
+    for y in range(2, 16):
+        for x in range(0, 16):
+            if go.px[y][x] == 8:
+                go.px[y][x] = 5
+        for x in range(16, 27):
+            if go.px[y][x] == 6:
+                go.px[y][x] = 3
+    _place(go, [bitmapfonts.HALL_GO[word[0]]], 3, 3, 0, 8)
+    _place(go, [bitmapfonts.HALL_GO[word[1]]], 17, 7, 0, 6)
+    go.commit(writes)
+    # KEY -> CLAU: light letters (6) on the carved panel (3)
+    key = BlockPicture(rom, HALL_KEY_BLOCKS, fg=fg, map16=map16)
+    if key.px[3][4] != 6 or key.px[12][4] != 3:
+        raise ValueError("unexpected KEY panel")
+    for y in range(2, 11):
+        for x in range(2, 30):
+            if key.px[y][x] in (5, 6):
+                key.px[y][x] = 3
+    glyphs = [bitmapfonts.HALL_KEY[c] for c in texts["hall_key"]]
+    width = sum(len(g[0]) for g in glyphs) + len(glyphs) - 1
+    if width > 28:
+        raise ValueError("KEY panel word too wide")
+    _place(key, glyphs, 2 + (28 - width) // 2, 2, 1, 6)
+    key.commit(writes)
+    def old_px(t, x, y):
+        a = fg + 32 * t + 4 * y + x // 2
+        return (rom[a] >> (4 * (x & 1))) & 15
+    tiles = {t for (t, x, y), v in writes.items() if old_px(t, x, y) != v}
+    own = {b for row in HALL_GO_BLOCKS + HALL_KEY_BLOCKS for b in row}
+    for b in _tileset_placed_blocks(rom, fg) - own:
+        if any((e & 0x3FF) - 0x41 in tiles for e in struct.unpack_from("<4H", rom, map16 + 8 * b)):
+            raise ValueError(f"Hall of Hieroglyphs block {b} shares a redrawn tile")
+    _apply_tile_writes(rom, fg, writes)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -2185,3 +2258,4 @@ def apply(rom, base, texts):
     pinball_sfx(rom, texts)
     nintendo_presents(rom, alloc, texts["nintendo_presents"])
     cd_covers(rom, texts)
+    hall_panels(rom, texts)

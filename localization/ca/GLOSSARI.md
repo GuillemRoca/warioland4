@@ -187,6 +187,13 @@ romanitzat) i els títols en katakana no es tradueixen.
 | NEW! | NOU! | Insígnies de la paret *(gràfic)* |
 | GET A GOAL | CAP A LA META | Estrelles de la paret *(gràfic, tres línies)* |
 
+## Sala dels Jeroglífics
+
+| Anglès | Català | Notes |
+|---|---|---|
+| Go! | Va! | Plafó del tutorial *(gràfic)* |
+| KEY | CLAU | Plafó del tutorial *(gràfic)* |
+
 ## Zona de Pinball
 
 | Anglès | Català | Notes |

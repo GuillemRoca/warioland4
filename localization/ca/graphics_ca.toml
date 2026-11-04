@@ -33,6 +33,10 @@ delete_question = "Vols esborrar-ho?"   # Delete this data?
 # Title screen: PUSH START -> PREM START (START is the button name and is kept)
 # Boot logo "Nintendo Presents" (only Presenta supported)
 nintendo_presents = "Presenta"
+
+# Hall of Hieroglyphs tutorial panels: "Go!" (capital + lowercase + !) and "KEY"
+hall_go = "Va!"
+hall_key = "CLAU"
 push = "PREM"
 
 # Shops, sound room and mini-games

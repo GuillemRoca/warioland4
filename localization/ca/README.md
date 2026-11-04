@@ -53,6 +53,7 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   - El Gran Tauler: caselles "INICI" i "META" del tauler (i les seves
     versions en sprite), rètols "TEU!", insígnies "NOU!" i les estrelles
     "CAP A LA META";
+  - Sala dels Jeroglífics: els plafons del tutorial "Va!" i "CLAU";
   - Zona de Pinball: les onomatopeies pintades a la paret, adaptades a la
     grafia dels còmics en català ("BRRUM!", "BRM", "NYIIIIIC").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
@@ -66,7 +67,8 @@ d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press PUSH") no es mostren mai i
 no s'han tocat.
 
 La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
-passadissos (també la Piràmide Daurada i el Passadís Daurat), els 18 nivells,
+passadissos (també la Piràmide Daurada i el Passadís Daurat), totes les sales
+dels 18 nivells (carregades una per una a l'emulador),
 caps (incloent-hi el temps esgotat), botigues, els tres minijocs de principi a
 fi, Sala de So, final i crèdits.
 

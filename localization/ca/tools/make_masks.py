@@ -20,6 +20,7 @@ STYLES = {
     "steak_flyer": [("Inter-Black.otf", 28, 0.25, 1.0), ("Inter-ExtraBold.otf", 18, 0.2, 1.0)],
     "board_burst": [("Inter-Black.otf", 19, 0.0, 0.76), ("Inter-Black.otf", 9, 0.0, 1.0),
                     ("Inter-Black.otf", 16, 0.0, 0.66)],
+    "steak_price": [("Inter-Black.otf", 40, 0.12, 0.9)],
     # graffiti: letters drawn one by one, tilted and bouncing, with extra spacing
     "pinball_sfx": [("Inter-Black.otf", 21, 0.0, 0.7, 4), ("Inter-Black.otf", 26, 0.0, 0.7, 2),
                     ("Inter-Black.otf", 19, 0.0, 0.8, 2)],

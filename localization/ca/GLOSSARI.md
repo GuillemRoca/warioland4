@@ -128,10 +128,13 @@ tiles, amb espai limitat.
 
 | Anglès | Català | Notes |
 |---|---|---|
-| Wario's Homerun Derby | Home Runs de Wario | "home run" és el terme usat també en català |
+| Wario's Homerun Derby | Beisbol de Wario | |
 | The Wario Hop | El Salt de Wario | |
 | Wario's Roulette | La Ruleta de Wario | |
-| STRIKE / OUT / FOUL / HOMERUN | STRIKE / OUT / FOUL / HOMERUN | Termes de beisbol, es mantenen *(gràfic)* |
+| HOMERUN | QUIN COP! | Crida del Beisbol de Wario *(gràfic)* |
+| STRIKE | FALLADA | Crida del Beisbol de Wario *(gràfic)* |
+| OUT | FORA | Crida del Beisbol de Wario *(gràfic)* |
+| FOUL | NUL·LA | Pilota nul·la; crida del Beisbol de Wario *(gràfic)* |
 | PLAY BALL | A JUGAR! | Crit de l'àrbitre *(gràfic)* |
 
 ## Sala de So (títols dels CD)
@@ -155,7 +158,9 @@ tiles, amb espai limitat.
 | You and Your Shoes | Tu i les teves sabates |
 | Mr. Ether & Planaria | L'èter i la planària |
 
-La lletra del karaoke (en japonès romanitzat) no es tradueix.
+Portades dels CD *(gràfic)*: MOON → LLUNA, SOFT SHELL → CLOSCA, SLEEPY → SON,
+AVOCADO! → ALVOCAT!, FLY → MOSCA. La lletra del karaoke (en japonès
+romanitzat) i els títols en katakana no es tradueixen.
 
 ## Introducció i final
 
@@ -166,6 +171,8 @@ La lletra del karaoke (en japonès romanitzat) no es tradueix.
 | LEGENDARY PYRAMID DISCOVERED DEEP IN JUNGLE!! | PIRÀMIDE LLEGENDÀRIA TROBADA DINS LA JUNGLA!! | Subtítol (28 + 16 caràcters) |
 | STEAKS! EAT AS MUCH AS YOU CAN!! | BISTECS! MENJA'N A DOJO!! | Subtítol (22 + 9 caràcters) i cartell *(gràfic)* |
 | THE END | FI | Pantalla final, amb les barres d'or originals *(gràfic)* |
+| $10 | €10 | Preu del cartell de bistecs *(gràfic)* |
+| Nintendo Presents | Nintendo Presenta | Logotip inicial *(gràfic)* |
 | Thank you, WARIO... | Gràcies, WARIO... | Final del joc |
 | A FEW DAYS LATER... | UNS DIES DESPRÉS… | Després dels crèdits (màx. 16 lletres) |
 | Your game is always saved when you go back to a passage. | Sempre que tornes a un passadís, es desa la partida. | Avís després del primer nivell |

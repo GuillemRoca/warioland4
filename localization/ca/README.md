@@ -39,12 +39,17 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   - capçaleres dels crèdits, amb una pàgina final nova: "TRADUCCIÓ AL
     CATALÀ — GUILLEM ROCA CASTANY";
   - final del joc ("Gràcies, WARIO...", "UNS DIES DESPRÉS…", el cartell
-    "BISTECS! / Menja'n a dojo!!" i la pantalla final "FI" amb "PREM START");
+    "BISTECS! / Menja'n a dojo!!" amb el preu en euros i la pantalla final
+    "FI" amb "PREM START");
   - combats contra els caps: "TEMPS ESGOTAT" quan s'acaba el temps (també
     al Passadís Daurat), el rètol "BOTIGA" i la pausa "PAUSA" dels passadissos
     dels caps;
-  - minijocs: "FI DEL JOC" i "COMENÇA!" als tres minijocs, "A JUGAR!" als
-    Home Runs de Wario i el logotip "mini Joc" de la previsualització;
+  - minijocs: "FI DEL JOC" i "COMENÇA!" als tres minijocs, les crides del
+    Beisbol de Wario ("QUIN COP!", "FALLADA", "FORA", "NUL·LA", "A JUGAR!")
+    i el logotip "mini Joc" de la previsualització;
+  - Sala de So: les portades dels CD amb paraules ("LLUNA", "CLOSCA", "SON",
+    "ALVOCAT!", "MOSCA");
+  - logotip inicial: "Nintendo Presenta";
   - El Gran Tauler: caselles "INICI" i "META" del tauler (i les seves
     versions en sprite), rètols "TEU!", insígnies "NOU!" i les estrelles
     "CAP A LA META";
@@ -52,14 +57,13 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
     grafia dels còmics en català ("BRRUM!", "BRM", "NYIIIIIC").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
-Es mantenen en l'original els noms propis (Wario, Nintendo, el personal dels
-crèdits), la lletra del karaoke (japonès romanitzat), els termes de beisbol
-(STRIKE, OUT, FOUL, HOMERUN), "START" com a nom de botó, el preu "$10" del
-cartell de bistecs i les portades dels CD de la Sala de So (noms de grups
-inventats). També es mantenen
-"Nintendo Presents" i "© 2001 Nintendo". Alguns gràfics sense ús a la versió
-USA/Europa (selector d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press
-PUSH") no s'han tocat.
+No queda cap paraula anglesa visible. Es mantenen els noms propis (Wario,
+Nintendo, el personal dels crèdits, el grup inventat "ATS" d'una portada), el
+text japonès (la lletra del karaoke en japonès romanitzat i els títols en
+katakana de dues portades), "START" com a nom de botó i la nota legal
+"© 2001 Nintendo". Alguns gràfics sense ús a la versió USA/Europa (selector
+d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press PUSH") no es mostren mai i
+no s'han tocat.
 
 La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
 passadissos (també la Piràmide Daurada i el Passadís Daurat), els 18 nivells,

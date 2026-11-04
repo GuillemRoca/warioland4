@@ -31,6 +31,8 @@ s_hard = "Extrem"             # S-Hard
 delete_question = "Vols esborrar-ho?"   # Delete this data?
 
 # Title screen: PUSH START -> PREM START (START is the button name and is kept)
+# Boot logo "Nintendo Presents" (only Presenta supported)
+nintendo_presents = "Presenta"
 push = "PREM"
 
 # Shops, sound room and mini-games
@@ -53,6 +55,8 @@ steak_subtitle = ["BISTECS! MENJA'N", "A DOJO!!"]
 # Lettering painted on the flyer itself (STEAKS! / Eat as much as you can!!).
 # Pre-rasterised: after changing it, run tools/make_masks.py.
 steak_flyer = ["BISTECS!", "Menja'n a dojo!!"]
+# Currency sign of the flyer price ($10 -> €10; pre-rasterised)
+steak_price = ["€"]
 # Newspaper headline: "PYRAMID DISCOVERED" (letters available: P R A M I D E O S C, plus T B À)
 intro_headline = "PIRÀMIDE TROBADA"
 # Newspaper body: "Legendary treasure nearly found, but accidents hindered findings"
@@ -79,9 +83,6 @@ minigame_logo = "Joc"
 # Mini-game banners (all three mini-games; 1-pixel font, max 60px)
 game_over = "FI DEL JOC"     # GAME OVER
 game_start = "COMENÇA!"      # GAME START
-# Home Run Derby umpire call PLAYBALL (HOMERUN, OUT, FOUL and STRIKE stay:
-# they are the baseball terms also used in Catalan)
-play_ball = "A JUGAR!"
 
 # The Big Board: first and last squares of the progress strip (START / GOAL);
 # a big first letter plus small letters, only these words are drawn
@@ -99,6 +100,23 @@ board_get = "TEU!"
 pinball_sfx = ["BRRUM!", "BRM", "NYIIIIIC"]
 
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
+# Home Run Derby calls (each must fit the sprites of the original word)
+[homerun_calls]
+homerun = "QUIN COP!"   # HOMERUN
+out = "FORA"            # OUT
+foul = "NUL·LA"         # FOUL (foul ball)
+play_ball = "A JUGAR!"  # PLAYBALL
+strike = "FALLADA"      # STRIKE
+
+# Lettering on the Sound Room CD covers (fixed tiny fonts: LLUNA, CLOSCA,
+# SON, ALVOCAT!, MOSCA use only the letters drawn in bitmapfonts.CD_*)
+[cd_covers]
+moon = "LLUNA"
+soft_shell = "CLOSCA"
+sleepy = "SON"
+avocado = "ALVOCAT!"
+fly = "MOSCA"
+
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]
 row = 51

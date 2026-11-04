@@ -1088,11 +1088,49 @@ def steak_flyer(tiles, lines):
                     sheet.set(left + x, top - margin + y, v)
 
 
-def steak_subtitle(rom, base, alloc, glyphs, lines, flyer=None):
+# The price "$10": the orange dollar sign (FLYER_SIGN area, left of the "10")
+# becomes a euro sign drawn in the same orange (9 above, C below), outlined in
+# dark red and shadowed like the rest of the flyer.
+FLYER_SIGN = (152, 183, 22, 58)               # x0, x1, y0, y1
+
+
+def steak_price(tiles, sign):
+    sheet = Sheet(tiles, 0, 32, 20)
+    x0, x1, y0, y1 = FLYER_SIGN
+    strip = [[sheet.get(x, y) for x in range(96)] for y in range(5)]
+    old = [[sheet.get(x, y) for x in range(x0, x1)] for y in range(y0, y1)]
+    for y in range(y0, y1):
+        k = y - y0
+        for x in range(x0, x1):
+            sheet.set(x, y, strip[k % 5][(x + 37 * (k // 5)) % 96])
+    mask = _art_mask("steak_price", sign)
+    art, margin = _flyer_lettering(mask, 2, 3), 8
+    left = x0 + (x1 - x0 - len(mask[0])) // 2 - margin
+    top = y0 + (y1 - y0 - len(mask)) // 2 - margin - 1
+    mid = top + margin + len(mask) // 2
+    for y, row in enumerate(art):
+        for x, v in enumerate(row):
+            X, Y = left + x, top + y
+            if v is None or not (x0 <= X < x1 and y0 <= Y < y1):
+                continue
+            if v in (0xD, 0xE):
+                v = 0x9 if Y < mid else 0xC
+            sheet.set(X, Y, v)
+    # keep whatever of the old drawing belonged to the "1" and the cow
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            o = old[y - y0][x - x0]
+            if o == 0xE or (x >= x1 - 3 and o in (1, 2, 3)):
+                sheet.set(x, y, o)
+
+
+def steak_subtitle(rom, base, alloc, glyphs, lines, flyer=None, price=None):
     tiles = bytearray(lz77.decompress(rom, STEAK_TILES))
     csize = lz77.compressed_size(rom, STEAK_TILES)
     if flyer:
         steak_flyer(tiles, flyer)
+    if price:
+        steak_price(tiles, price[0])
     n1, n2 = STEAK_LINES
     _render_subtitle(tiles, glyphs, [(lines[0], n1, 0x320, 0x340), (lines[1], n2, 0x320 + n1, 0x340 + n1)])
     # give every cell its own tile (the original reused the "!" and space tiles)
@@ -1546,39 +1584,48 @@ def minigame_banners(rom, texts):
 
 # Home Run Derby calls: the screen is played sideways, so the words are stored
 # rotated a quarter turn in columns 16-31, rows 2-23 of the sheet.  Upright,
-# each call is a 176x24 band (PLAYBALL is the third); letters are 21 rows
-# tall, outlined (2), highlighted on the top/left edges (9), filled (4) and
-# shadowed one pixel down-right (3).
+# the calls are 176x24 bands (HOMERUN, OUT + FOUL, PLAYBALL, STRIKE) shown by
+# fixed sprites, so each new word is centred on the original one; letters are
+# 21 rows tall, outlined (2), highlighted on the top/left edges (9), filled (4)
+# and shadowed one pixel down-right (3).
 
 HOMERUN_SHEET = 0x725EE4
-PLAYBALL_BAND = 64
+# call -> (band, extent of the original word, cleared range): u along the band
+HOMERUN_CALLS = {
+    "homerun": (16, (9, 152), (0, 176)),
+    "out": (40, (9, 69), (0, 72)),
+    "foul": (40, (73, 155), (72, 176)),
+    "play_ball": (64, (9, 153), (0, 176)),
+    "strike": (88, (9, 125), (0, 176)),
+}
 
 
-def play_ball(rom, text):
-    sheet = Sheet(rom, HOMERUN_SHEET, 32, 24)
+def _homerun_call(sheet, band, extent, cleared, text):
     get = lambda u, v: sheet.get(128 + v, 16 + 175 - u)
     put = lambda u, v, c: sheet.set(128 + v, 16 + 175 - u, c)
-    if get(9, PLAYBALL_BAND + 1) != 9 or get(9, PLAYBALL_BAND + 3) != 9:
-        raise ValueError("unexpected Home Run Derby PLAYBALL graphic")
-    mask = set()
-    u = 9
+    glyphs = []
     for ch in text:
         if ch == " ":
+            glyphs.append(None)
+        else:
+            glyphs.append(bitmapfonts.CALLS21N.get(ch) or bitmapfonts.CALLS21[ch])
+    width = sum(7 if g is None else len(g[0]) + 3 for g in glyphs) - 3
+    lo, hi = extent
+    if width > hi - lo + 1 or lo + width > cleared[1] - 2:
+        raise ValueError(f"Home Run Derby call too wide: {text!r}")
+    u = lo + (hi - lo + 1 - width) // 2
+    mask = set()
+    for g in glyphs:
+        if g is None:
             u += 7
             continue
-        g = bitmapfonts.CALLS21[ch]
-        for r, row in enumerate(g):
-            for i, v in enumerate(row):
-                if v:
-                    mask.add((u + i, PLAYBALL_BAND + 1 + r))
+        mask |= {(u + i, band + 1 + r) for r, row in enumerate(g) for i, v in enumerate(row) if v}
         u += len(g[0]) + 3
-    if u - 3 > 156:
-        raise ValueError(f"PLAYBALL replacement too wide: {text!r}")
     ring = {(a + dx, b + dy) for a, b in mask for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - mask
     body = mask | ring
     shade = {(a + 1, b + 1) for a, b in body} - body
-    for v in range(PLAYBALL_BAND, PLAYBALL_BAND + 24):
-        for uu in range(176):
+    for v in range(band, band + 24):
+        for uu in range(*cleared):
             p = (uu, v)
             c = 0
             if p in mask:
@@ -1588,6 +1635,14 @@ def play_ball(rom, text):
             elif p in shade:
                 c = 3
             put(uu, v, c)
+
+
+def homerun_calls(rom, texts):
+    sheet = Sheet(rom, HOMERUN_SHEET, 32, 24)
+    if sheet.get(128 + 65, 16 + 175 - 9) != 9 or sheet.get(128 + 17, 16 + 175 - 9) != 9:
+        raise ValueError("unexpected Home Run Derby call graphics")
+    for key, (band, extent, cleared) in HOMERUN_CALLS.items():
+        _homerun_call(sheet, band, extent, cleared, texts["homerun_calls"][key])
 
 
 # ---------------------------------------------------------------------------
@@ -1960,6 +2015,150 @@ def pinball_sfx(rom, texts):
     _apply_tile_writes(rom, fg, writes)
 
 
+# ---------------------------------------------------------------------------
+# Boot logo: "Nintendo / Presents".  "Presents" is 13x3 BG tiles (0x64-0x8A,
+# row by row) of the LZ77 sheet 0x283F54; Catalan "Presenta" replaces the
+# final s (columns 84-97, rows 5-18 of the 104x24 word) with an a assembled
+# from the font's own e arc, n stem and e bowl.
+
+BOOT_TILES = 0x283F54
+BOOT_WORD_TILE = 0x64
+BOOT_A = """
+...99999999...
+..9997777999..
+99976555557999
+99765555555799
+99999999965599
+99977777765599
+99765555555599
+99655555555599
+99555999965599
+99655799965599
+99765555555599
+99976555555599
+.9999777777799
+..999999999999
+"""
+
+
+def nintendo_presents(rom, alloc, text):
+    if text != "Presenta":
+        raise ValueError("only Presenta is supported for the boot logo")
+    tiles = bytearray(lz77.decompress(rom, BOOT_TILES))
+    csize = lz77.compressed_size(rom, BOOT_TILES)
+
+    def loc(x, y):
+        t = BOOT_WORD_TILE + (y // 8) * 13 + x // 8
+        return t * 32 + (y % 8) * 4 + (x % 8) // 2, x & 1
+
+    def get(x, y):
+        a, hi = loc(x, y)
+        return (tiles[a] >> 4) if hi else tiles[a] & 15
+
+    def put(x, y, v):
+        a, hi = loc(x, y)
+        tiles[a] = (tiles[a] & 0x0F) | (v << 4) if hi else (tiles[a] & 0xF0) | v
+
+    if get(87, 9) != 5 or get(0, 0) != 9:
+        raise ValueError("unexpected boot logo tiles")
+    glyph = [row for row in BOOT_A.strip("\n").splitlines()]
+    for y in range(24):
+        for x in range(86, 99):
+            put(x, y, 0)
+    for r, row in enumerate(glyph):
+        for c, ch in enumerate(row):
+            if ch != ".":
+                put(84 + c, 5 + r, int(ch, 16))
+    romspace.store(rom, alloc, BOOT_TILES, csize, lz77.compress(tiles))
+
+
+# ---------------------------------------------------------------------------
+# Sound Room CD covers: 48x32 pictures (6x4 tiles) of the raw OBJ sheet
+# 0x6B2A88 (32 tiles per row).  Five carry English words (MOON, SOFT SHELL,
+# SLEEPY, AVOCADO!, FLY); they are relettered in place with the cover's own
+# colours.
+
+CD_SHEET = 0x6B2A88
+CD_COVERS = {"moon": (12, 6), "soft_shell": (12, 12), "sleepy": (12, 18),
+             "avocado": (16, 0), "fly": (16, 6)}
+
+
+def _cd_canvas(rom, key):
+    r, c = CD_COVERS[key]
+    return Canvas(Sheet(rom, CD_SHEET, 32, 24), [(0, 0, 48, 32, c * 8, r * 8)])
+
+
+def _cd_text(cv, glyphs, text, x, y, ink, gap=1, vertical=False, shadow=None):
+    for ch in text:
+        g = glyphs[ch]
+        pts = {(x + i, y + r) for r, row in enumerate(g) for i, v in enumerate(row) if v}
+        if shadow:
+            sdx, sdy, sc, under = shadow
+            for a, b in pts:
+                p = (a + sdx, b + sdy)
+                if p not in pts and cv.get(*p) in under:
+                    cv.set(*p, sc)
+        for a, b in pts:
+            cv.set(a, b, ink)
+        if vertical:
+            y += len(g) + gap
+        else:
+            x += len(g[0]) + gap
+
+
+def cd_covers(rom, texts):
+    t = texts["cd_covers"]
+    f = bitmapfonts
+    # MOON: outlined letters (8) on the orange ground (C) of the moon base
+    cv = _cd_canvas(rom, "moon")
+    if cv.get(11, 23) != 8 or cv.get(10, 21) != 0xC:
+        raise ValueError("unexpected MOON cover")
+    for y in range(23, 28):
+        for x in range(10, 30):
+            cv.set(x, y, 0xC)
+    w = sum(len(f.CD_TINY4[c][0]) for c in t["moon"]) + len(t["moon"]) - 1
+    _cd_text(cv, f.CD_TINY4, t["moon"], 10 + (20 - w) // 2, 23, 8, shadow=(0, 1, 0xA, (0xC,)))
+    # SOFT SHELL: light letters (E) on the dark band (D)
+    cv = _cd_canvas(rom, "soft_shell")
+    if cv.get(11, 22) != 0xD or cv.get(11, 23) != 0xE:
+        raise ValueError("unexpected SOFT SHELL cover")
+    for y in range(23, 30):
+        for x in range(11, 42):
+            cv.set(x, y, 0xD)
+    w = sum(len(f.CD_BAND7[c][0]) for c in t["soft_shell"]) + 2 * (len(t["soft_shell"]) - 1)
+    _cd_text(cv, f.CD_BAND7, t["soft_shell"], 11 + (31 - w) // 2, 23, 0xE, gap=2)
+    # SLEEPY: tall letters (E) on the white page (F), left of the cloud
+    cv = _cd_canvas(rom, "sleepy")
+    if cv.get(11, 14) != 0xE or cv.get(10, 14) != 0xF:
+        raise ValueError("unexpected SLEEPY cover")
+    for y in range(13, 30):
+        for x in range(10, 31):
+            if cv.get(x, y) == 0xE:
+                cv.set(x, y, 0xF)
+    w = sum(len(f.CD_TALL12[c][0]) for c in t["sleepy"]) + len(t["sleepy"]) - 1
+    _cd_text(cv, f.CD_TALL12, t["sleepy"], 10 + (18 - w) // 2, 16, 0xE)
+    # AVOCADO!: yellow letters (C) shadowed dark (1) on diagonal stripes (E/8)
+    cv = _cd_canvas(rom, "avocado")
+    if cv.get(10, 1) != 0xE or cv.get(16, 1) != 8:
+        raise ValueError("unexpected AVOCADO! cover")
+    for y in range(3, 9):
+        for x in range(10, 43):
+            cv.set(x, y, 0xE if (x + y - 22) % 9 < 4 else 8)
+    w = sum(len(f.CD_SMALL5[c][0]) for c in t["avocado"]) + len(t["avocado"]) - 1
+    _cd_text(cv, f.CD_SMALL5, t["avocado"], 10 + (33 - w) // 2, 3, 0xC, shadow=(1, 1, 1, (0xE, 8)))
+    # FLY: letters stacked downwards (F) with a dark shadow (4) on cream (E)
+    cv = _cd_canvas(rom, "fly")
+    if cv.get(35, 2) != 0xF or cv.get(42, 2) != 0xE:
+        raise ValueError("unexpected FLY cover")
+    for y in range(1, 31):
+        for x in range(35, 43):
+            if cv.get(x, y) in (0xF, 4):
+                cv.set(x, y, 0xE)
+    h = sum(len(f.CD_WIDE5[c]) for c in t["fly"]) + len(t["fly"]) - 1
+    _cd_text(cv, f.CD_WIDE5, t["fly"], 36, 1 + (30 - h) // 2, 0xF, vertical=True,
+             shadow=(1, 1, 4, (0xE,)))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1971,7 +2170,7 @@ def apply(rom, base, texts):
     credits(rom, texts)
     save_message(rom, texts)
     intro_subtitle(rom, base, alloc, texts)
-    steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"], texts["steak_flyer"])
+    steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"], texts["steak_flyer"], texts["steak_price"])
     ending_thanks(rom, alloc, texts)
     days_later(rom, alloc, texts["days_later"])
     time_up(rom, texts["time_up"])
@@ -1979,8 +2178,10 @@ def apply(rom, base, texts):
     the_end(rom, base, alloc, texts["the_end"], push_tiles)
     minigame_logo(rom, texts["minigame_logo"])
     minigame_banners(rom, texts)
-    play_ball(rom, texts["play_ball"])
+    homerun_calls(rom, texts)
     big_board_signs(rom, texts)
     big_board_decor(rom, texts)
     pause_label(rom, texts["pause_label"])
     pinball_sfx(rom, texts)
+    nintendo_presents(rom, alloc, texts["nintendo_presents"])
+    cd_covers(rom, texts)

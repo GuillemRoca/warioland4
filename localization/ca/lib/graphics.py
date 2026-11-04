@@ -618,6 +618,7 @@ def title_push_start(rom, alloc, texts):
             t = base + c
             tiles[t * 32:t * 32 + 32] = gfx.encode_tile([rows[r * 8 + y][c * 8:c * 8 + 8] for y in range(8)])
     romspace.store(rom, alloc, TITLE_OBJ, csize, lz77.compress(tiles))
+    return bytes(tiles[0x1AA * 32:0x1C2 * 32])   # the redrawn PUSH START tiles (2 rows of 12)
 
 
 # ---------------------------------------------------------------------------
@@ -928,11 +929,15 @@ INTRO_EXTRA = bitmapfonts._parse("""
 ..#...
 ..#...
 ..#...
+..#...
+..#...
 [B]
 #####.
 #....#
 #....#
+#....#
 #####.
+#....#
 #....#
 #....#
 #....#
@@ -958,7 +963,7 @@ def _subtitle_glyphs(base):
             if ch != " " and ch not in glyphs:
                 px = gfx.tile_pixels(tiles, top + i) + gfx.tile_pixels(tiles, bot + i)
                 glyphs[ch] = [[1 if px[y][x] == 1 else 0 for x in range(8)] for y in range(16)]
-    for ch, g in INTRO_EXTRA.items():  # 8-row skeletons at x=1, rows 4-11
+    for ch, g in INTRO_EXTRA.items():  # skeletons at x=1 from row 4 (capitals: rows 4-13)
         cell = [[0] * 8 for _ in range(16)]
         for y, row in enumerate(g):
             for x, v in enumerate(row):
@@ -1001,9 +1006,87 @@ STEAK_MAPS = (0x2D8292, 0x2D82D0)          # tilemap entries typed for the top /
 STEAK_LINES = (22, 9)                      # cells per line (fixed by the cutscene code)
 
 
-def steak_subtitle(rom, base, alloc, glyphs, lines):
+# The flyer itself is a 256x160 picture (identity tilemap, 32 tiles per row)
+# drawn with a 14-step brightness ramp (1 = dark red ... E = yellow).  Its
+# lettering ("STEAKS!" / "Eat as much as you can!!") covers FLYER_AREA; it is
+# painted over with the clean background of rows 0-4 and redrawn from the
+# masks in flyer_masks.py: yellow fill, dark red outline, a shadow extruded
+# down-left and a soft edge.
+FLYER_AREA = (0, 154, 18, 71)                 # x0, x1, y0, y1
+FLYER_LINES = [(19, 2, 4), (51, 1, 2)]       # top row, outline radius, shadow depth
+
+
+def _disk(mask, r):
+    h, w = len(mask), len(mask[0])
+    out = [[0] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            if mask[y][x]:
+                for dy in range(-r, r + 1):
+                    for dx in range(-r, r + 1):
+                        if dx * dx + dy * dy <= r * r + r and 0 <= y + dy < h and 0 <= x + dx < w:
+                            out[y + dy][x + dx] = 1
+    return out
+
+
+def _flyer_lettering(mask, outline, shadow, margin=8):
+    h, w = len(mask) + 2 * margin, len(mask[0]) + 2 * margin
+    m = [[0] * w for _ in range(h)]
+    for y, row in enumerate(mask):
+        for x, v in enumerate(row):
+            m[y + margin][x + margin] = v
+    ring = _disk(m, outline)
+    shade = [[0] * w for _ in range(h)]
+    for k in range(1, shadow + 1):
+        dx, dy = -(2 * k) // 3, k
+        for y in range(h - dy):
+            for x in range(max(0, -dx), w):
+                if ring[y][x]:
+                    shade[y + dy][x + dx] = 1
+    soft = _disk([[ring[y][x] | shade[y][x] for x in range(w)] for y in range(h)], 1)
+    edge = _disk([[1 - m[y][x] for x in range(w)] for y in range(h)], 1)
+    out = [[None] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            if m[y][x]:
+                out[y][x] = 0xD if edge[y][x] and (x + y) % 2 else 0xE
+            elif ring[y][x]:
+                out[y][x] = 1
+            elif shade[y][x]:
+                out[y][x] = 2
+            elif soft[y][x]:
+                out[y][x] = 5
+    return out
+
+
+def steak_flyer(tiles, lines):
+    from .flyer_masks import MASKS
+    sheet = Sheet(tiles, 0, 32, 20)
+    x0, x1, y0, y1 = FLYER_AREA
+    strip = [[sheet.get(x, y) for x in range(96)] for y in range(5)]
+    for y in range(y0, y1):
+        k = y - y0
+        for x in range(x0, x1):
+            sheet.set(x, y, strip[k % 5][(x + 37 * (k // 5)) % 96])
+    for text, (top, outline, shadow) in zip(lines, FLYER_LINES):
+        if text not in MASKS:
+            raise ValueError(f"no flyer mask for {text!r}: run tools/make_flyer_masks.py")
+        mask = [[1 if c == "#" else 0 for c in row] for row in MASKS[text].strip("\n").splitlines()]
+        if len(mask[0]) > x1 - x0 - 6:
+            raise ValueError(f"flyer line too wide: {text!r}")
+        art, margin = _flyer_lettering(mask, outline, shadow), 8
+        left = x0 + (x1 - x0 - len(mask[0])) // 2 - margin
+        for y, row in enumerate(art):
+            for x, v in enumerate(row):
+                if v is not None and x0 <= left + x < x1 and y0 <= top - margin + y < y1:
+                    sheet.set(left + x, top - margin + y, v)
+
+
+def steak_subtitle(rom, base, alloc, glyphs, lines, flyer=None):
     tiles = bytearray(lz77.decompress(rom, STEAK_TILES))
     csize = lz77.compressed_size(rom, STEAK_TILES)
+    if flyer:
+        steak_flyer(tiles, flyer)
     n1, n2 = STEAK_LINES
     _render_subtitle(tiles, glyphs, [(lines[0], n1, 0x320, 0x340), (lines[1], n2, 0x320 + n1, 0x340 + n1)])
     # give every cell its own tile (the original reused the "!" and space tiles)
@@ -1303,19 +1386,94 @@ def shop_sign(rom, text):
         x += len(g[0]) + gap
 
 
+# ---------------------------------------------------------------------------
+# Final screen after the epilogue: "THE END" in gold bars plus the title's
+# "PUSH START", both in the LZ77 OBJ sheet 0x2D8390 (2D mapping, 32 tiles per
+# row).  PUSH START (row 0-1, columns 4-15) is the same drawing as on the title
+# screen, so it gets the same redrawn tiles.  THE END is a 256x64 picture
+# (rows 2-9) shown by four 64x64 sprites at x=9; FI is assembled from its
+# bars: F is the E without its bottom bar, I is the left column of the H.
+# Sparkles (52 OAM frames at 0x2D90C4, relative to (120, 88)) are moved
+# horizontally so they keep twinkling over the letters.
+
+END_OBJ = 0x2D8390
+END_FRAMES = (0x2D90C4, 0x2D9C78)
+END_BARS = (0x40, 0x48, 0x50, 0x58)
+
+
+def the_end(rom, base, alloc, text, push_tiles):
+    if text != "FI":
+        raise ValueError("only 'FI' is supported for THE END")
+    tiles = bytearray(lz77.decompress(rom, END_OBJ))
+    csize = lz77.compressed_size(rom, END_OBJ)
+    if len(tiles) != 0x2800:
+        raise ValueError("unexpected size of the final screen OBJ sheet")
+    title = lz77.decompress(base, TITLE_OBJ)
+    for r, (end_row, title_tile) in enumerate(((4, 0x1AA), (0x24, 0x1B6))):
+        for c in range(12):
+            a, b = (end_row + c) * 32, (title_tile + c) * 32
+            if tiles[a:a + 32] != title[b:b + 32]:
+                raise ValueError("final screen PUSH START differs from the title screen")
+            tiles[a:a + 32] = push_tiles[(r * 12 + c) * 32:(r * 12 + c + 1) * 32]
+
+    sheet = Sheet(tiles, 2 * 32 * 32, 32, 8)   # rows 2-9 of the sheet
+
+    def cut(x0, x1, y0=0, y1=64):
+        return [[sheet.get(x, y) if x0 <= x < x1 else 0 for x in range(x0, x1)] for y in range(y0, y1)]
+
+    f = cut(78, 108)                 # E ...
+    for y in range(38, 48):          # ... without its bottom bar
+        for x in range(89 - 78, 30):
+            f[y][x] = 0
+        if f[y][87 - 78] and y <= 46:
+            f[y][88 - 78] = 1        # right shadow of the bare column
+    i = cut(46, 56)
+    gap = 4
+    width = len(f[0]) + gap + len(i[0])
+    x0 = 111 - width // 2           # centred on screen x=120 (sprites start at x=9)
+    sheet.fill(0, 0, 256, 64, 0)
+    for g, gx in ((f, x0), (i, x0 + len(f[0]) + gap)):
+        for y, row in enumerate(g):
+            for x, v in enumerate(row):
+                if v:
+                    sheet.set(gx + x, y, v)
+
+    # sparkles: map their x range over THE END (-108..94) onto the new word
+    lo, hi = -108, 94
+    nlo, nhi = x0 + 9 - 120 - 2, x0 + 9 - 120 + width - 8
+    a = END_FRAMES[0]
+    while a < END_FRAMES[1]:
+        n = struct.unpack_from("<H", rom, a)[0]
+        ents = [struct.unpack_from("<3H", rom, a + 2 + 6 * k) for k in range(n)]
+        if sum((e[2] & 0x3FF) in END_BARS for e in ents) != 4:
+            raise ValueError(f"unexpected THE END frame at {a:#x}")
+        for k, (a0, a1, a2) in enumerate(ents):
+            if (a2 & 0x3FF) in END_BARS:
+                continue
+            x = a1 & 0x1FF
+            x = x - 512 if x >= 256 else x
+            nx = round(nlo + (x - lo) * (nhi - nlo) / (hi - lo))
+            struct.pack_into("<H", rom, a + 2 + 6 * k + 2, (a1 & ~0x1FF) | (nx & 0x1FF))
+        a += 2 + 6 * n
+    if a != END_FRAMES[1]:
+        raise ValueError("THE END frames misparsed")
+    romspace.store(rom, alloc, END_OBJ, csize, lz77.compress(tiles))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
     pause_buttons(rom, texts)
     save_reset(rom, alloc, texts)
     file_select(rom, alloc, texts)
-    title_push_start(rom, alloc, texts)
+    push_tiles = title_push_start(rom, alloc, texts)
     small_labels(rom, texts)
     credits(rom, texts)
     save_message(rom, texts)
     intro_subtitle(rom, base, alloc, texts)
-    steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"])
+    steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"], texts["steak_flyer"])
     ending_thanks(rom, alloc, texts)
     days_later(rom, alloc, texts["days_later"])
     time_up(rom, texts["time_up"])
     shop_sign(rom, texts["shop_sign"])
+    the_end(rom, base, alloc, texts["the_end"], push_tiles)

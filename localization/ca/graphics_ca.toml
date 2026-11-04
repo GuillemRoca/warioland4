@@ -48,6 +48,9 @@ intro_subtitle = ["PIRÀMIDE LLEGENDÀRIA TROBADA", "DINS LA JUNGLA!!"]
 # Second intro variant, steak-house flyer (22 and 9 cells):
 # "STEAKS! EAT AS MUCH AS" / "YOU CAN!!"
 steak_subtitle = ["BISTECS! MENJA'N", "A DOJO!!"]
+# Lettering painted on the flyer itself (STEAKS! / Eat as much as you can!!).
+# Pre-rasterised: after changing it, run tools/make_flyer_masks.py with the new lines.
+steak_flyer = ["BISTECS!", "Menja'n a dojo!!"]
 # Newspaper headline: "PYRAMID DISCOVERED" (letters available: P R A M I D E O S C, plus T B À)
 intro_headline = "PIRÀMIDE TROBADA"
 # Newspaper body: "Legendary treasure nearly found, but accidents hindered findings"
@@ -64,6 +67,9 @@ time_up = ["TEMPS", "ESGOTAT"]
 
 # "ITEM SHOP" sign over the shop door of the boss corridors (max ~61px)
 shop_sign = "BOTIGA"
+
+# Last screen after the epilogue: THE END (assembled from the gold bars; only FI)
+the_end = "FI"
 
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.

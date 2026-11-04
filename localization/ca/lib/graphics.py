@@ -1866,6 +1866,30 @@ def big_board_decor(rom, texts):
     _apply_tile_writes(rom, BIG_BOARD_FG, writes)
 
 
+# ---------------------------------------------------------------------------
+# Plain "PAUSE" shown when pausing outside the levels' pause menu (boss
+# corridors): 6x2 raw BG tiles at 0x3F1EA0 (row 0 tiles 0-5, row 1 tiles 6-11).
+# Catalan PAUSA: the drawn A is copied over the final E.
+
+PAUSE_TILES = 0x3F1EA0
+PAUSE_A_COLS = range(11, 19)
+PAUSE_E_COLS = range(38, 46)
+
+
+def pause_label(rom, text):
+    if text != "PAUSA":
+        raise ValueError("only PAUSA is supported for the PAUSE label")
+    sheet = Sheet(rom, PAUSE_TILES, width_tiles=6, height_tiles=2)
+    if sheet.get(0, 0) != 3 or sheet.get(13, 5) != 0xF or sheet.get(39, 5) != 0xF:
+        raise ValueError("unexpected PAUSE tiles")
+    a = [[sheet.get(x, y) for x in PAUSE_A_COLS] for y in range(16)]
+    for y in range(16):
+        for x in PAUSE_E_COLS:
+            sheet.set(x, y, 3)
+        for i, v in enumerate(a[y]):
+            sheet.set(PAUSE_E_COLS[0] + i, y, v)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1888,3 +1912,4 @@ def apply(rom, base, texts):
     play_ball(rom, texts["play_ball"])
     big_board_signs(rom, texts)
     big_board_decor(rom, texts)
+    pause_label(rom, texts["pause_label"])

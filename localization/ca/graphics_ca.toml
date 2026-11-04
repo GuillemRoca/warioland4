@@ -16,6 +16,8 @@ erase_all = "Vols esborrar totes les dades desades?"
 are_you_sure = "N'estàs segur?"
 
 # Pause screen buttons: RETURN / QUIT / GIVE UP
+# Plain PAUSE label (boss corridors; only PAUSA supported)
+pause_label = "PAUSA"
 return = "TORNA"
 quit = "SURT"
 give_up = "ABANDONA"

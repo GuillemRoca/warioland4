@@ -1460,6 +1460,39 @@ def the_end(rom, base, alloc, text, push_tiles):
     romspace.store(rom, alloc, END_OBJ, csize, lz77.compress(tiles))
 
 
+# ---------------------------------------------------------------------------
+# Passage preview of the mini-game shop: a 40x40 picture (raw tiles, 5x5 of a
+# 32-tile-wide sheet) with "mini" on a tilted badge and "Game" below.  "mini"
+# is also Catalan; the word below is redrawn with the logo's colour bands
+# (blue, cyan, grey and a red foot on the orange base).
+
+MG_LOGO_TILES = 0x652D64                    # tile 0x2E0 of the stage select sheet
+MG_LOGO_ROWS = range(19, 37)
+MG_LOGO_COLS = range(4, 38)
+
+
+def _mg_logo_ink(y):
+    return 9 if y <= 27 else 8 if y <= 30 or y == 32 else 6 if y == 36 else 3
+
+
+def minigame_logo(rom, text):
+    sheet = Sheet(rom, MG_LOGO_TILES, width_tiles=32, height_tiles=5)
+    if sheet.get(2, 20) != 8 or sheet.get(5, 20) != 9 or sheet.get(10, 37) != 0xC:
+        raise ValueError("unexpected mini-game shop preview tiles")
+    for y in MG_LOGO_ROWS:
+        for x in MG_LOGO_COLS:
+            sheet.set(x, y, 0xC if y >= 34 else 0xF)
+    fnt = bitmapfonts.LOGO18
+    width = fnt.width(text)
+    if width > len(MG_LOGO_COLS):
+        raise ValueError(f"mini-game logo word too wide: {text!r}")
+    x0 = MG_LOGO_COLS[0] + (len(MG_LOGO_COLS) - width) // 2
+    for y, row in enumerate(fnt.mask(text)):
+        for x, v in enumerate(row):
+            if v:
+                sheet.set(x0 + x, MG_LOGO_ROWS[0] + y, _mg_logo_ink(MG_LOGO_ROWS[0] + y))
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1477,3 +1510,4 @@ def apply(rom, base, texts):
     time_up(rom, texts["time_up"])
     shop_sign(rom, texts["shop_sign"])
     the_end(rom, base, alloc, texts["the_end"], push_tiles)
+    minigame_logo(rom, texts["minigame_logo"])

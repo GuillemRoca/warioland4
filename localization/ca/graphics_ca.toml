@@ -71,6 +71,9 @@ shop_sign = "BOTIGA"
 # Last screen after the epilogue: THE END (assembled from the gold bars; only FI)
 the_end = "FI"
 
+# Mini-game shop preview logo: "mini" stays, "Game" is redrawn (letters J o c only)
+minigame_logo = "Joc"
+
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

@@ -59,6 +59,12 @@ ending_thanks = "Gràcies"
 # After the credits: "A FEW DAYS LATER..." (one sprite per letter, max 16)
 days_later = "UNS DIES DESPRÉS…"
 
+# Boss timer runs out (TIME UP!!): two lines of the 64x48 banner
+time_up = ["TEMPS", "ESGOTAT"]
+
+# "ITEM SHOP" sign over the shop door of the boss corridors (max ~61px)
+shop_sign = "BOTIGA"
+
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

@@ -1211,6 +1211,98 @@ def days_later(rom, alloc, text):
     sheet.save(alloc)
 
 
+# ---------------------------------------------------------------------------
+# "TIME UP!!" when a boss timer runs out: six 32x16 affine sprites shown at
+# double size compose a 64x48 picture, stored as three 64x16 strips side by
+# side (columns 0-23, rows 0-1) of the raw OBJ sheet sTimeUpGfx.  Letters are
+# italic, filled with a top-to-bottom gradient, outlined in teal on the left
+# and with a dark drop shadow on the right and below.
+
+TIME_UP_GFX = 0x404688
+TIME_UP_RAMP = ["5", "7", "A", "A", "9", "9", "B9", "B", "BD", "DB", "D", "DE",
+                "E", "E2", "2E", "2", "2", "2", "23", "3", "1"]
+
+
+def _time_up_line(canvas, text, y0):
+    H = len(TIME_UP_RAMP)
+    slant = lambda r: (H - 1 - r) // 5
+    for fnt, gap in ((bitmapfonts.CAPS7_WIDE, 2), (bitmapfonts.CAPS7, 2)):
+        if all(c in fnt.glyphs for c in text):
+            gl = [fnt.glyphs[c] for c in text]
+            total = sum(len(g[0]) for g in gl) + gap * (len(gl) - 1) + slant(0) + 3
+            if total <= 64:
+                break
+    else:
+        raise ValueError(f"TIME UP line too wide: {text!r}")
+    x = (64 - total) // 2 + 1
+    body = set()
+    for g in gl:
+        pts = [(x + i + slant(r), y0 + r, r) for r in range(H)
+               for i, v in enumerate(g[r * len(g) // H]) if v]
+        own = {(a, b) for a, b, _ in pts}
+        free = lambda p: p not in own and p not in body and 0 <= p[0] < 64 and 0 <= p[1] < 48
+        for a, b, _ in pts:
+            for dx, dy in ((1, 0), (2, 0), (0, 1), (1, 1), (2, 1)):
+                if free((a + dx, b + dy)):
+                    canvas[b + dy][a + dx] = 15
+        for a, b, _ in pts:
+            if free((a - 1, b)):
+                canvas[b][a - 1] = 4
+        for a, b, r in pts:
+            s = TIME_UP_RAMP[r]
+            canvas[b][a] = int(s[(a + b) % len(s)], 16)
+        body |= own
+        x += len(g[0]) + gap
+
+
+def time_up(rom, lines):
+    canvas = [[0] * 64 for _ in range(48)]
+    _time_up_line(canvas, lines[0], 2)
+    _time_up_line(canvas, lines[1], 25)
+    sheet = raw_sheet(rom, TIME_UP_GFX)
+    for y in range(48):
+        strip, yy = divmod(y, 16)
+        for x in range(64):
+            sheet.set(strip * 64 + x, yy, canvas[y][x])
+
+
+# ---------------------------------------------------------------------------
+# "ITEM SHOP" sign above the shop door in the boss corridors (tileset shared by
+# every passage): 8x2 raw tiles of the corridor tileset, 14 tiles per row.
+# Each letter has its own colour, a light outline on the left and a dark
+# shadow to the right and below, on the sign's white board.
+
+SHOP_SIGN_TILES = 0x4E14DC
+SHOP_SIGN_COLOURS = [0x8, 0x6, 0xA, 0xC, 0xE, 0xB]   # red, yellow, cyan, green, pink, violet
+
+
+def shop_sign(rom, text):
+    sheet = Sheet(rom, SHOP_SIGN_TILES, width_tiles=14, height_tiles=2)
+    if sheet.get(0, 0) != 5 or sheet.get(2, 2) != 2:
+        raise ValueError("unexpected shop sign tiles")
+    sheet.fill(2, 3, 61, 11, 2)
+    fnt = bitmapfonts.SIGN10
+    glyphs = [fnt.glyphs[c] for c in text if c != " "]
+    gap = 2
+    total = sum(len(g[0]) for g in glyphs) + gap * (len(glyphs) - 1) + 2
+    if total > 61:
+        raise ValueError(f"shop sign text too wide: {text!r}")
+    x = 2 + (61 - total) // 2 + 1
+    for k, g in enumerate(glyphs):
+        colour = SHOP_SIGN_COLOURS[k % len(SHOP_SIGN_COLOURS)]
+        ink = {(x + i, 3 + r) for r, row in enumerate(g) for i, v in enumerate(row) if v}
+        for a, b in ink:
+            for p in ((a + 1, b), (a, b + 1), (a + 1, b + 1)):
+                if p not in ink:
+                    sheet.set(*p, 0xF)
+        for a, b in ink:
+            if (a - 1, b) not in ink and sheet.get(a - 1, b) == 2:
+                sheet.set(a - 1, b, 3)
+        for a, b in ink:
+            sheet.set(a, b, colour)
+        x += len(g[0]) + gap
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1225,3 +1317,5 @@ def apply(rom, base, texts):
     steak_subtitle(rom, base, alloc, _subtitle_glyphs(base), texts["steak_subtitle"])
     ending_thanks(rom, alloc, texts)
     days_later(rom, alloc, texts["days_later"])
+    time_up(rom, texts["time_up"])
+    shop_sign(rom, texts["shop_sign"])

@@ -11,6 +11,8 @@ import struct
 
 from . import bitmapfonts, font, gfx, lz77, rle, romspace
 
+ROM_BASE = 0x08000000
+
 
 class Sheet:
     """A raw 4bpp tile sheet in the ROM: width_tiles x height_tiles, row-major tiles."""
@@ -1890,6 +1892,74 @@ def pause_label(rom, text):
             sheet.set(PAUSE_E_COLS[0] + i, y, v)
 
 
+# ---------------------------------------------------------------------------
+# Pinball Zone: graffiti sound effects painted on the background layer of its
+# only room using tileset 35 (VROOM! twice coloured, VRM, SCREEEEE), adapted
+# to Catalan comic spelling.  Each word is a picture of map16 blocks on a
+# transparent background: a fill shaded by rows (sampled from the original),
+# a 2-pixel brown outline (1) and a light edge (2).  Cells made of the shared
+# blank tile cannot be drawn on, so every word has a fixed position that keeps
+# out of them (and SCREEEEE's two copies of one tile identical).
+
+PINBALL_TILESET = 35
+PINBALL_ROOM = 0x3F5EDC
+PINBALL_WORDS = [  # (block grid, position of the mask in the picture)
+    ([list(range(560, 565)), list(range(568, 573))], (4, 9)),
+    ([[592, 593, 594], [600, 601, 602]], (3, 5)),
+    ([list(range(544, 552)), list(range(552, 560))], (35, 3)),
+]
+# second colour variants of VROOM! and VRM: other palettes, same tiles
+PINBALL_ALIASES = set(range(576, 581)) | set(range(584, 589)) | {595, 596, 597, 603, 604, 605}
+
+
+def pinball_sfx(rom, texts):
+    f = struct.unpack_from("<9I", rom, 0x3F2298 + 36 * PINBALL_TILESET)
+    fg, map16 = f[0] - ROM_BASE, f[5] - ROM_BASE
+    word_blocks = set(PINBALL_ALIASES)
+    writes = {}
+    for (grid, (ox, oy)), text in zip(PINBALL_WORDS, texts["pinball_sfx"]):
+        word_blocks |= {b for row in grid for b in row}
+        pic = BlockPicture(rom, grid, fg=fg, map16=map16)
+        bands = []
+        for y in range(pic.h):
+            c = Counter(v for v in pic.px[y] if v not in (0, 1, 2))
+            bands.append(c.most_common(1)[0][0] if c else None)
+        rows = [y for y, b in enumerate(bands) if b is not None]
+        if not rows:
+            raise ValueError("unexpected Pinball Zone graffiti tiles")
+        top, bot = rows[0], rows[-1]
+        mask = _art_mask("pinball_sfx", text)
+        ink = {(ox + x, oy + y) for y, row in enumerate(mask) for x, v in enumerate(row) if v}
+        ring = {(a + dx, b + dy) for a, b in ink for dx in (-1, 0, 1) for dy in (-1, 0, 1)}
+        ring = {(a + dx, b + dy) for a, b in ring for dx in (-1, 0, 1) for dy in (-1, 0, 1)}
+        edge = {(a + dx, b + dy) for a, b in ring for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))}
+        i0, i1 = min(b for _, b in ink), max(b for _, b in ink)
+        for y in range(pic.h):
+            for x in range(pic.w):
+                pic.px[y][x] = 0
+        for a, b in edge:
+            if not (0 <= a < pic.w and 0 <= b < pic.h) or pic.src[b][a] is None:
+                raise ValueError(f"Pinball Zone sound effect {text!r} does not fit its tiles")
+            if (a, b) in ink:
+                k = min(bot, max(top, top + round((b - i0) * (bot - top) / max(1, i1 - i0))))
+                while bands[k] is None:
+                    k -= 1
+                pic.px[b][a] = bands[k]
+            else:
+                pic.px[b][a] = 1 if (a, b) in ring else 2
+        pic.commit(writes)
+    # the redrawn tiles must not appear in any other block placed in the room
+    tiles = {t for t, _, _ in writes}
+    for layer in range(3):
+        ptr = struct.unpack_from("<I", rom, PINBALL_ROOM + 8 + 4 * layer)[0] - ROM_BASE
+        w, h = rom[ptr], rom[ptr + 1]
+        data, _, _ = rle.decompress(rom, ptr + 2, header=False)
+        for b in set(struct.unpack_from("<%dH" % (w * h), data)) - word_blocks:
+            if any((e & 0x3FF) - 0x41 in tiles for e in struct.unpack_from("<4H", rom, map16 + 8 * b)):
+                raise ValueError(f"Pinball Zone block {b} shares a redrawn tile")
+    _apply_tile_writes(rom, fg, writes)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1913,3 +1983,4 @@ def apply(rom, base, texts):
     big_board_signs(rom, texts)
     big_board_decor(rom, texts)
     pause_label(rom, texts["pause_label"])
+    pinball_sfx(rom, texts)

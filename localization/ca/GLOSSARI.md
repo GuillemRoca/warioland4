@@ -60,6 +60,7 @@ tiles, amb espai limitat.
 | Mini-Game Shop | Botiga de Minijocs | |
 | mini Game (logo) | mini Joc | Previsualització de la botiga *(gràfic)* |
 | ITEM SHOP (rètol) | BOTIGA | Porta de la botiga als passadissos dels caps *(gràfic)* |
+| PAUSE | PAUSA | Pausa als passadissos dels caps *(gràfic)* |
 | TIME UP!! | TEMPS ESGOTAT | Quan s'acaba el temps d'un cap *(gràfic, dues línies)* |
 | GAME OVER | FI DEL JOC | Minijocs *(gràfic)* |
 | GAME START | COMENÇA! | Minijocs *(gràfic)* |
@@ -179,8 +180,13 @@ La lletra del karaoke (en japonès romanitzat) no es tradueix.
 | NEW! | NOU! | Insígnies de la paret *(gràfic)* |
 | GET A GOAL | CAP A LA META | Estrelles de la paret *(gràfic, tres línies)* |
 
-Les onomatopeies dibuixades a la Zona de Pinball (VROOM!, VRM, SCREEEEE) es
-mantenen.
+## Zona de Pinball
+
+| Anglès | Català | Notes |
+|---|---|---|
+| VROOM! | BRRUM! | Grafit de la paret *(gràfic)* |
+| VRM | BRM | Grafit de la paret *(gràfic)* |
+| SCREEEEE | NYIIIIIC | Grafit de la paret *(gràfic)* |
 
 ## Crèdits
 

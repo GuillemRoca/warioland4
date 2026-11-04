@@ -94,6 +94,10 @@ board_burst = ["CAP", "A LA", "META"]
 board_new = "NOU!"
 board_get = "TEU!"
 
+# Pinball Zone wall graffiti (VROOM!, VRM, SCREEEEE), adapted as Catalan
+# onomatopoeia; pre-rasterised (run tools/make_masks.py after changing them)
+pinball_sfx = ["BRRUM!", "BRM", "NYIIIIIC"]
+
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

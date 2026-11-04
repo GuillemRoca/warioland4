@@ -40,26 +40,31 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
     CATALÀ — GUILLEM ROCA CASTANY";
   - final del joc ("Gràcies, WARIO...", "UNS DIES DESPRÉS…", el cartell
     "BISTECS! / Menja'n a dojo!!" i la pantalla final "FI" amb "PREM START");
-  - combats contra els caps: "TEMPS ESGOTAT" quan s'acaba el temps i el
-    rètol "BOTIGA" del passadís dels caps;
+  - combats contra els caps: "TEMPS ESGOTAT" quan s'acaba el temps (també
+    al Passadís Daurat), el rètol "BOTIGA" i la pausa "PAUSA" dels passadissos
+    dels caps;
   - minijocs: "FI DEL JOC" i "COMENÇA!" als tres minijocs, "A JUGAR!" als
     Home Runs de Wario i el logotip "mini Joc" de la previsualització;
-  - El Gran Tauler: caselles "INICI" i "META" del tauler, rètols "TEU!",
-    insígnies "NOU!" i les estrelles "CAP A LA META".
+  - El Gran Tauler: caselles "INICI" i "META" del tauler (i les seves
+    versions en sprite), rètols "TEU!", insígnies "NOU!" i les estrelles
+    "CAP A LA META";
+  - Zona de Pinball: les onomatopeies pintades a la paret, adaptades a la
+    grafia dels còmics en català ("BRRUM!", "BRM", "NYIIIIIC").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
 Es mantenen en l'original els noms propis (Wario, Nintendo, el personal dels
 crèdits), la lletra del karaoke (japonès romanitzat), els termes de beisbol
-(STRIKE, OUT, FOUL, HOMERUN), "START" com a nom de botó, les onomatopeies
-dibuixades de la Zona de Pinball (VROOM!, VRM, SCREEEEE), el preu "$10" del
-cartell de bistecs i les portades dels CD de la Sala de So. També es mantenen
+(STRIKE, OUT, FOUL, HOMERUN), "START" com a nom de botó, el preu "$10" del
+cartell de bistecs i les portades dels CD de la Sala de So (noms de grups
+inventats). També es mantenen
 "Nintendo Presents" i "© 2001 Nintendo". Alguns gràfics sense ús a la versió
 USA/Europa (selector d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press
 PUSH") no s'han tocat.
 
-La traducció s'ha revisat jugant amb una partida desada al 100 %: passadissos,
-nivells, caps (incloent-hi el temps esgotat), botigues, minijocs, Sala de So,
-final i crèdits.
+La traducció s'ha revisat jugant amb una partida desada al 100 %: tots els
+passadissos (també la Piràmide Daurada i el Passadís Daurat), els 18 nivells,
+caps (incloent-hi el temps esgotat), botigues, els tres minijocs de principi a
+fi, Sala de So, final i crèdits.
 
 ## Regenerar el pedaç
 
@@ -86,7 +91,7 @@ exactament la ROM traduïda.
 | `lib/font.py` | Codificació de text i lletres accentuades de la font 8×16 |
 | `lib/graphics.py` | Redibuixat dels gràfics amb text |
 | `lib/bitmapfonts.py` | Fonts petites en ASCII-art calcades de l'estil original |
-| `lib/art_masks.py` | Lletres pre-rasteritzades (cartell de bistecs, estrelles del Gran Tauler) |
+| `lib/art_masks.py` | Lletres pre-rasteritzades (cartell de bistecs, estrelles del Gran Tauler, grafits de la Zona de Pinball) |
 | `tools/make_masks.py` | Regenera `art_masks.py` (cal Pillow i la font Inter) |
 | `lib/lz77.py`, `lib/rle.py` | Compressió LZ77 (BIOS) i RLE de tilemaps de WL4 |
 | `lib/bps.py` | Creació i aplicació de pedaços BPS |
@@ -105,7 +110,7 @@ exactament la ROM traduïda.
   drets d'autor): el codi la saltava quan `gLanguage = 0`. El pedaç canvia
   aquesta comprovació (`0x94AEC`) perquè es mostri, i hi posa el crèdit de la
   traducció en lloc de la nota.
-- Els rètols dels nivells (botiga dels caps, El Gran Tauler) formen part dels
+- Els rètols dels nivells (botiga dels caps, El Gran Tauler, Zona de Pinball) formen part dels
   tilesets: es redibuixen a partir dels blocs 16×16 que els fan servir i es
   comprova que cap tile compartit no quedi dibuixat de dues maneres.
 - Els diàlegs es dibuixen amb la mateixa font 8×16 i l'espaiat proporcional

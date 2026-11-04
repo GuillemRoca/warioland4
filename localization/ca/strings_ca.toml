@@ -317,3 +317,64 @@ ca = "Hmpf!"
 [[filesel]]
 en = "NO  DATA"
 ca = "SENSE DADES"
+
+# Sound Room karaoke (unlocked by the top score in all 18 levels): song title
+# (centred) and its 13 lyric lines (pointer table 0x63D948).  The song lights
+# up one column at a time, so each line keeps within the columns the original
+# romanised Japanese line used; line 7's brackets and the two spaces of the
+# last line sit on the columns the song never lights.
+[[karaoke_title]]
+en = "MEDAMAYAKI"
+ca = "OU FERRAT"
+
+[[karaoke]]
+en = "UKURERE MITAINA"
+ca = "Com un ukulele"
+
+[[karaoke]]
+en = "TABIWO SHIYO"
+ca = "fem un tomb"
+
+[[karaoke]]
+en = "ARUITE IKO TSUKINO"
+ca = "Caminem i collim"
+
+[[karaoke]]
+en = "KAKERAWO HIROINAGARA"
+ca = "trossets de la lluna"
+
+[[karaoke]]
+en = "CHIZUNO KAWARINI KYANBASU"
+ca = "En lloc de mapa, un llenç"
+
+[[karaoke]]
+en = "NIJINO SHIZUKUDE"
+ca = "amb gotes d'iris"
+
+[[karaoke]]
+en = "(SOMEMASHO)"
+ca = "(pintem-lo)"
+
+[[karaoke]]
+en = "HINODENI MANIAUYONI"
+ca = "per ser-hi a l'alba"
+
+[[karaoke]]
+en = "BOYAKETA TOKEIWA OITEKO"
+ca = "Deixem l'hora borrosa"
+
+[[karaoke]]
+en = "UMINI TAMEIKI TOKASHITE"
+ca = "fonent sospirs a la mar"
+
+[[karaoke]]
+en = "ISHINI KOEWO KIZAMO"
+ca = "gravem veus en roca"
+
+[[karaoke]]
+en = "TSUKIWO SUPUNI UKABETARA"
+ca = "la lluna a la cullera,"
+
+[[karaoke]]
+en = "HYOUGARANO KUMOGA WARAU"
+ca = "Els núvols tacats riuen"

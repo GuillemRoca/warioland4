@@ -30,14 +30,15 @@ hard = "Difícil"              # Hard
 s_hard = "Extrem"             # S-Hard
 delete_question = "Vols esborrar-ho?"   # Delete this data?
 
-# Title screen: PUSH START -> PREM START (START is the button name and is kept)
 # Boot logo "Nintendo Presents" (only Presenta supported)
 nintendo_presents = "Presenta"
 
 # Hall of Hieroglyphs tutorial panels: "Go!" (capital + lowercase + !) and "KEY"
 hall_go = "Va!"
 hall_key = "CLAU"
+# Title and final screens: PUSH START -> PREM A (both screens accept A as well as START)
 push = "PREM"
+push_button = "A"
 
 # Shops, sound room and mini-games
 exit = "SURT"     # EXIT
@@ -120,6 +121,10 @@ soft_shell = "CLOSCA"
 sleepy = "SON"
 avocado = "ALVOCAT!"
 fly = "MOSCA"
+shepherd = "SAP"          # ATS = About That Shepherd -> Sobre Aquell Pastor
+never_change = "ETERNES"  # カワラナイモノ (Things That Never Change)
+headrush = "VERTIGEN"     # タチクラミ (Beyond the Headrush)
+karaoke = "MIAU"          # hiragana caption under the karaoke cat
 
 # Staff names and SUPER MARIO CLUB are left unchanged.
 [[credits]]

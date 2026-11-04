@@ -27,7 +27,14 @@ STRING_TABLES = {
     "cd": (0x63D8E0, 16),
     "minigame": (0x6E32F4, 12),
     "itemshop": (0x730150, 15),
+    "karaoke": (0x63D948, 13),
 }
+# Literal pool entry in the Sound Room code that points at the karaoke song title
+KARAOKE_TITLE_POINTER = 0x873F4
+# Karaoke: the song lights lyric columns 1..N one at a time (recorded in-game);
+# columns it never lights must hold a space or a bracket.
+KARAOKE_COLUMNS = [15, 12, 18, 20, 25, 16, 10, 19, 23, 23, 19, 24, 23]
+KARAOKE_UNLIT = {6: {1, 11}, 12: {11, 18}}
 # Literal pool entry in the file select code that points at the "NO DATA" string
 NO_DATA_POINTER = 0x913C0
 
@@ -69,7 +76,23 @@ def apply_strings(rom, strings):
             raise SystemExit(f"[{name}] translations never used: {sorted(missing)}")
     (e,) = strings["filesel"]
     patch_string(rom, read_ptr(rom, NO_DATA_POINTER), e["en"], e["ca"], "filesel")
-    return count + 1
+    (e,) = strings["karaoke_title"]
+    patch_string(rom, read_ptr(rom, KARAOKE_TITLE_POINTER), e["en"], e["ca"], "karaoke_title")
+    check_karaoke(strings["karaoke"])
+    return count + 2
+
+
+def check_karaoke(lines):
+    if len(lines) != len(KARAOKE_COLUMNS):
+        raise SystemExit("[karaoke] expected 13 lyric lines")
+    for i, e in enumerate(lines):
+        text = e["ca"]
+        last = max(KARAOKE_COLUMNS[i], max(KARAOKE_UNLIT.get(i, {0})))
+        if len(text) > last:
+            raise SystemExit(f"[karaoke] line {i + 1} {text!r} is longer than its {last} sung columns")
+        for col in KARAOKE_UNLIT.get(i, ()):
+            if col <= len(text) and text[col - 1] not in " ()":
+                raise SystemExit(f"[karaoke] line {i + 1} {text!r}: column {col} is never lit")
 
 
 def build(base_path, out_rom, out_bps):

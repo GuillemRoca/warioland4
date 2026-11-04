@@ -542,10 +542,10 @@ def file_select(rom, alloc, texts):
 
 
 # ---------------------------------------------------------------------------
-# Title screen: "PUSH START" -> "PREM START"
+# Title screen: "PUSH START" -> "PREM A" (A starts the game as well as START)
 # OBJ tiles are LZ77 compressed at 0x298A50; the text is two 96x8 strips of tiles
 # (0x1AA-0x1B5 top, 0x1B6-0x1C1 bottom).  Letters are 11 rows with a shaded
-# multi-colour style; P and R are copied from the original, E and M are drawn here.
+# multi-colour style; P, R and A are copied from the original, E and M are drawn here.
 
 TITLE_OBJ = 0x298A50
 TITLE_E = """
@@ -581,8 +581,8 @@ def _parse_px(art):
 
 
 def title_push_start(rom, alloc, texts):
-    if texts["push"] != "PREM":
-        raise ValueError("only 'PREM' is supported for the title screen")
+    if texts["push"] != "PREM" or texts["push_button"] != "A":
+        raise ValueError("only 'PREM A' is supported for the title screen")
     tiles = bytearray(lz77.decompress(rom, TITLE_OBJ))
     csize = lz77.compressed_size(rom, TITLE_OBJ)
     rows = [[0] * 96 for _ in range(16)]
@@ -594,15 +594,19 @@ def title_push_start(rom, alloc, texts):
     letters = {
         "P": [row[4:14] for row in rows[3:14]],
         "R": [row[73:83] for row in rows[3:14]],
+        "A": [row[65:74] for row in rows[3:14]],
         "E": _parse_px(TITLE_E),
         "M": _parse_px(TITLE_M),
     }
     for y in range(16):
-        rows[y][0:47] = [0] * 47
+        rows[y][:] = [0] * 96
     x = 4
-    for ch in "PREM":
+    for k, ch in enumerate("PREM A"):
+        if ch == " ":
+            x += 5
+            continue
         g = letters[ch]
-        if x != 4:
+        if x != 4 and "PREM A"[k - 1] != " ":
             x -= 1  # neighbouring letters share their outline column
         for yy, line in enumerate(g):
             for xx, v in enumerate(line):
@@ -613,8 +617,8 @@ def title_push_start(rom, alloc, texts):
                     continue
                 rows[3 + yy][x + xx] = v
         x += len(g[0])
-    if x > 47:
-        raise ValueError("title word too wide")
+    if x > 96:
+        raise ValueError("title prompt too wide")
     for r, base in ((0, 0x1AA), (1, 0x1B6)):
         for c in range(12):
             t = base + c
@@ -2075,12 +2079,17 @@ def nintendo_presents(rom, alloc, text):
 # ---------------------------------------------------------------------------
 # Sound Room CD covers: 48x32 pictures (6x4 tiles) of the raw OBJ sheet
 # 0x6B2A88 (32 tiles per row).  Five carry English words (MOON, SOFT SHELL,
-# SLEEPY, AVOCADO!, FLY); they are relettered in place with the cover's own
-# colours.
+# SLEEPY, AVOCADO!, FLY), one the initials of its English title (ATS, "About
+# That Shepherd"), two the Japanese title in katakana (カワラナイモノ "things
+# that never change", タチクラミ "headrush") and the three frames of the
+# karaoke cover a handwritten hiragana caption under the cat.  They are
+# relettered in place with the cover's own colours.
 
 CD_SHEET = 0x6B2A88
 CD_COVERS = {"moon": (12, 6), "soft_shell": (12, 12), "sleepy": (12, 18),
-             "avocado": (16, 0), "fly": (16, 6)}
+             "avocado": (16, 0), "fly": (16, 6), "shepherd": (8, 0),
+             "never_change": (8, 6), "headrush": (8, 18),
+             "karaoke1": (20, 12), "karaoke2": (20, 18), "karaoke3": (20, 24)}
 
 
 def _cd_canvas(rom, key):
@@ -2157,6 +2166,49 @@ def cd_covers(rom, texts):
     h = sum(len(f.CD_WIDE5[c]) for c in t["fly"]) + len(t["fly"]) - 1
     _cd_text(cv, f.CD_WIDE5, t["fly"], 36, 1 + (30 - h) // 2, 0xF, vertical=True,
              shadow=(1, 1, 4, (0xE,)))
+    # ATS: thick light letters (F) on the striped sky (7/6), at the same places
+    cv = _cd_canvas(rom, "shepherd")
+    if cv.get(11, 2) != 0xF or cv.get(10, 2) != 7 or cv.get(26, 6) != 0xF:
+        raise ValueError("unexpected ATS cover")
+    sky = {2: 7, 3: 6, 4: 7, 5: 6, 6: 6}
+    for y, c in sky.items():
+        for x in range(11, 27):
+            cv.set(x, y, c)
+    if len(t["shepherd"]) != 3:
+        raise ValueError("the shepherd cover holds three letters")
+    for k, ch in enumerate(t["shepherd"]):
+        _cd_text(cv, f.CD_BOLD5, ch, 11 + 6 * k, 2, 0xF)
+    # カワラナイモノ: light letters (E) on the top band (rows A, 9, 9, 8)
+    cv = _cd_canvas(rom, "never_change")
+    if cv.get(12, 2) != 0xE or cv.get(10, 2) != 0xA or cv.get(10, 5) != 8:
+        raise ValueError("unexpected katakana cover (Things That Never Change)")
+    band = {2: 0xA, 3: 9, 4: 9, 5: 8}
+    for y, c in band.items():
+        for x in range(10, 43):
+            cv.set(x, y, c)
+    w = sum(len(f.CD_TINY4[c][0]) for c in t["never_change"]) + len(t["never_change"]) - 1
+    _cd_text(cv, f.CD_TINY4, t["never_change"], 10 + (33 - w) // 2, 2, 0xE)
+    # タチクラミ: dark letters (1) on the light green sky (9)
+    cv = _cd_canvas(rom, "headrush")
+    if cv.get(18, 3) != 1 or cv.get(10, 3) != 9:
+        raise ValueError("unexpected katakana cover (Beyond the Headrush)")
+    for y in range(3, 9):
+        for x in range(10, 43):
+            if cv.get(x, y) == 1:
+                cv.set(x, y, 9)
+    w = sum(len(f.CD_THIN6[c][0]) for c in t["headrush"]) + len(t["headrush"]) - 1
+    _cd_text(cv, f.CD_THIN6, t["headrush"], 10 + (33 - w) // 2, 3, 1)
+    # karaoke cat (three frames): grey caption (4) at the bottom left
+    for key in ("karaoke1", "karaoke2", "karaoke3"):
+        cv = _cd_canvas(rom, key)
+        ground = cv.get(10, 26)
+        if cv.get(13, 26) != 4 or ground not in (8, 0xB):
+            raise ValueError(f"unexpected karaoke cover {key}")
+        for y in range(26, 30):
+            for x in range(10, 43):
+                if cv.get(x, y) == 4:
+                    cv.set(x, y, ground)
+        _cd_text(cv, f.CD_TINY4, t["karaoke"], 11, 26, 4)
 
 
 # ---------------------------------------------------------------------------

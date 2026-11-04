@@ -20,13 +20,14 @@ tiles, amb espai limitat.
   `à è é í ï ò ó ú ü ç · ,`. No hi ha majúscules accentuades a les cadenes de
   text: les frases s'han redactat per evitar-les (p. ex. "Això és..." en lloc
   de "És..."). Als gràfics sí que se n'han dibuixat (MÀX, MENÚ, crèdits).
-- **Botons:** START i A/B es mantenen com a noms de botó ("PREM START").
+- **Botons:** A i B són lletres i es mantenen. "PUSH START" passa a "PREM A":
+  la pantalla de títol i la pantalla final també accepten el botó A.
 
 ## Menús i interfície
 
 | Anglès | Català | Notes |
 |---|---|---|
-| PUSH START | PREM START | Pantalla de títol *(gràfic)* |
+| PUSH START | PREM A | Pantalla de títol i pantalla final *(gràfic)*; totes dues accepten A |
 | NO DATA | SENSE DADES | Arxiu buit |
 | SAVE (A/B) | ARXIU (A/B) | Etiqueta de la ranura de partida *(gràfic, 3×5 px)* |
 | DELETE DATA | ESBORRAR | Botó de la selecció d'arxiu *(gràfic)* |
@@ -159,8 +160,28 @@ tiles, amb espai limitat.
 | Mr. Ether & Planaria | L'èter i la planària |
 
 Portades dels CD *(gràfic)*: MOON → LLUNA, SOFT SHELL → CLOSCA, SLEEPY → SON,
-AVOCADO! → ALVOCAT!, FLY → MOSCA. La lletra del karaoke (en japonès
-romanitzat) i els títols en katakana no es tradueixen.
+AVOCADO! → ALVOCAT!, FLY → MOSCA, ATS (*About That Shepherd*) → SAP (*Sobre
+Aquell Pastor*), カワラナイモノ ("coses que no canvien") → ETERNES, タチクラミ
+("vertigen") → VERTIGEN, i la signatura en hiragana sota el gat de la portada
+del karaoke → MIAU.
+
+## Karaoke (Sala de So)
+
+Es desbloqueja amb la puntuació màxima als 18 nivells. La cançó il·lumina la
+lletra columna a columna, de manera que cada vers català ocupa les mateixes
+columnes que el vers original en japonès romanitzat.
+
+| Original (japonès romanitzat) | Català |
+|---|---|
+| MEDAMAYAKI (títol) | OU FERRAT |
+| UKURERE MITAINA / TABIWO SHIYO | Com un ukulele / fem un tomb |
+| ARUITE IKO TSUKINO / KAKERAWO HIROINAGARA | Caminem i collim / trossets de la lluna |
+| CHIZUNO KAWARINI KYANBASU / NIJINO SHIZUKUDE / (SOMEMASHO) | En lloc de mapa, un llenç / amb gotes d'iris / (pintem-lo) |
+| HINODENI MANIAUYONI | per ser-hi a l'alba |
+| BOYAKETA TOKEIWA OITEKO | Deixem l'hora borrosa |
+| UMINI TAMEIKI TOKASHITE | fonent sospirs a la mar |
+| ISHINI KOEWO KIZAMO | gravem veus en roca |
+| TSUKIWO SUPUNI UKABETARA / HYOUGARANO KUMOGA WARAU | la lluna a la cullera, / Els núvols tacats riuen |
 
 ## Introducció i final
 

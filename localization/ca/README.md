@@ -24,11 +24,12 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
 ## Què s'ha traduït
 
 - **Textos de la font del joc** (`strings_ca.toml`): noms dels passadissos, dels
-  nivells i dels caps, títols dels CD de la Sala de So, missatges de la botiga
-  d'objectes i de la botiga de minijocs, i "SENSE DADES" a la selecció d'arxiu.
+  nivells i dels caps, títols dels CD de la Sala de So, el títol i la lletra
+  del karaoke, missatges de la botiga d'objectes i de la botiga de minijocs, i
+  "SENSE DADES" a la selecció d'arxiu.
   S'hi han afegit les lletres `à è é í ï ò ó ú ü ç · ,`.
 - **Gràfics amb text** (`graphics_ca.toml`):
-  - pantalla de títol (PREM START);
+  - pantalla de títol (PREM A);
   - introducció: titular, text i subtítol del diari, i subtítol del cartell de
     bistecs de la segona variant;
   - selecció d'arxiu (ARXIU, ESBORRAR, SURT, Difícil, Extrem);
@@ -40,15 +41,17 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
     CATALÀ — GUILLEM ROCA CASTANY";
   - final del joc ("Gràcies, WARIO...", "UNS DIES DESPRÉS…", el cartell
     "BISTECS! / Menja'n a dojo!!" amb el preu en euros i la pantalla final
-    "FI" amb "PREM START");
+    "FI" amb "PREM A");
   - combats contra els caps: "TEMPS ESGOTAT" quan s'acaba el temps (també
     al Passadís Daurat), el rètol "BOTIGA" i la pausa "PAUSA" dels passadissos
     dels caps;
   - minijocs: "FI DEL JOC" i "COMENÇA!" als tres minijocs, les crides del
     Beisbol de Wario ("QUIN COP!", "FALLADA", "FORA", "NUL·LA", "A JUGAR!")
     i el logotip "mini Joc" de la previsualització;
-  - Sala de So: les portades dels CD amb paraules ("LLUNA", "CLOSCA", "SON",
-    "ALVOCAT!", "MOSCA");
+  - Sala de So: les portades dels CD amb lletres ("LLUNA", "CLOSCA", "SON",
+    "ALVOCAT!", "MOSCA", "SAP" en lloc de les inicials "ATS", "ETERNES" i
+    "VERTIGEN" en lloc dels títols en katakana, i "MIAU" sota el gat de la
+    portada del karaoke);
   - logotip inicial: "Nintendo Presenta";
   - El Gran Tauler: caselles "INICI" i "META" del tauler (i les seves
     versions en sprite), rètols "TEU!", insígnies "NOU!" i les estrelles
@@ -58,11 +61,10 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
     grafia dels còmics en català ("BRRUM!", "BRM", "NYIIIIIC").
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
-No queda cap paraula anglesa visible. Es mantenen els noms propis (Wario,
-Nintendo, el personal dels crèdits, el grup inventat "ATS" d'una portada), el
-text japonès (la lletra del karaoke en japonès romanitzat i els títols en
-katakana de dues portades), "START" com a nom de botó i la nota legal
-"© 2001 Nintendo". Alguns gràfics sense ús a la versió USA/Europa (selector
+No queda cap paraula anglesa ni japonesa visible. Només es mantenen els noms
+propis (Wario, Nintendo, el personal dels crèdits), la paraula "karaoke" (que
+també és catalana), les lletres A i B dels botons, el cartell de l'abecedari
+d'una portada i la nota legal "© 2001 Nintendo". Alguns gràfics sense ús a la versió USA/Europa (selector
 d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press PUSH") no es mostren mai i
 no s'han tocat.
 

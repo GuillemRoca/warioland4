@@ -58,6 +58,11 @@ tiles, amb espai limitat.
 | mini-game(s) | minijoc(s) | |
 | Item Shop | botiga (d'objectes) | |
 | Mini-Game Shop | Botiga de Minijocs | |
+| mini Game (logo) | mini Joc | Previsualització de la botiga *(gràfic)* |
+| ITEM SHOP (rètol) | BOTIGA | Porta de la botiga als passadissos dels caps *(gràfic)* |
+| TIME UP!! | TEMPS ESGOTAT | Quan s'acaba el temps d'un cap *(gràfic, dues línies)* |
+| GAME OVER | FI DEL JOC | Minijocs *(gràfic)* |
+| GAME START | COMENÇA! | Minijocs *(gràfic)* |
 | Sound Room | Sala de So | |
 
 ## Passadissos
@@ -125,7 +130,8 @@ tiles, amb espai limitat.
 | Wario's Homerun Derby | Home Runs de Wario | "home run" és el terme usat també en català |
 | The Wario Hop | El Salt de Wario | |
 | Wario's Roulette | La Ruleta de Wario | |
-| STRIKE | STRIKE | Terme de beisbol, es manté *(gràfic)* |
+| STRIKE / OUT / FOUL / HOMERUN | STRIKE / OUT / FOUL / HOMERUN | Termes de beisbol, es mantenen *(gràfic)* |
+| PLAY BALL | A JUGAR! | Crit de l'àrbitre *(gràfic)* |
 
 ## Sala de So (títols dels CD)
 
@@ -157,10 +163,24 @@ La lletra del karaoke (en japonès romanitzat) no es tradueix.
 | PYRAMID DISCOVERED | PIRÀMIDE TROBADA | Titular del diari *(gràfic)* |
 | Legendary treasure nearly found, but accidents hindered findings | Tresor llegendari gairebé trobat, però hi ha hagut accidents | Cos del diari *(gràfic)* |
 | LEGENDARY PYRAMID DISCOVERED DEEP IN JUNGLE!! | PIRÀMIDE LLEGENDÀRIA TROBADA DINS LA JUNGLA!! | Subtítol (28 + 16 caràcters) |
-| STEAKS! EAT AS MUCH AS YOU CAN!! | BISTECS! MENJA'N A DOJO!! | Subtítol (22 + 9 caràcters) |
+| STEAKS! EAT AS MUCH AS YOU CAN!! | BISTECS! MENJA'N A DOJO!! | Subtítol (22 + 9 caràcters) i cartell *(gràfic)* |
+| THE END | FI | Pantalla final, amb les barres d'or originals *(gràfic)* |
 | Thank you, WARIO... | Gràcies, WARIO... | Final del joc |
 | A FEW DAYS LATER... | UNS DIES DESPRÉS… | Després dels crèdits (màx. 16 lletres) |
 | Your game is always saved when you go back to a passage. | Sempre que tornes a un passadís, es desa la partida. | Avís després del primer nivell |
+
+## El Gran Tauler
+
+| Anglès | Català | Notes |
+|---|---|---|
+| START (casella) | INICI | Tauler de progrés *(gràfic)* |
+| GOAL (casella) | META | Tauler de progrés *(gràfic)* |
+| GET! | TEU! | Rètol d'objecte *(gràfic)* |
+| NEW! | NOU! | Insígnies de la paret *(gràfic)* |
+| GET A GOAL | CAP A LA META | Estrelles de la paret *(gràfic, tres línies)* |
+
+Les onomatopeies dibuixades a la Zona de Pinball (VROOM!, VRM, SCREEEEE) es
+mantenen.
 
 ## Crèdits
 

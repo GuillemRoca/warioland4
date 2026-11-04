@@ -1010,7 +1010,7 @@ STEAK_LINES = (22, 9)                      # cells per line (fixed by the cutsce
 # drawn with a 14-step brightness ramp (1 = dark red ... E = yellow).  Its
 # lettering ("STEAKS!" / "Eat as much as you can!!") covers FLYER_AREA; it is
 # painted over with the clean background of rows 0-4 and redrawn from the
-# masks in flyer_masks.py: yellow fill, dark red outline, a shadow extruded
+# masks in art_masks.py: yellow fill, dark red outline, a shadow extruded
 # down-left and a soft edge.
 FLYER_AREA = (0, 154, 18, 71)                 # x0, x1, y0, y1
 FLYER_LINES = [(19, 2, 4), (51, 1, 2)]       # top row, outline radius, shadow depth
@@ -1059,8 +1059,14 @@ def _flyer_lettering(mask, outline, shadow, margin=8):
     return out
 
 
+def _art_mask(group, text):
+    from .art_masks import MASKS
+    if (group, text) not in MASKS:
+        raise ValueError(f"no pre-rasterised mask for {text!r}: run tools/make_masks.py")
+    return [[1 if c == "#" else 0 for c in row] for row in MASKS[group, text].strip("\n").splitlines()]
+
+
 def steak_flyer(tiles, lines):
-    from .flyer_masks import MASKS
     sheet = Sheet(tiles, 0, 32, 20)
     x0, x1, y0, y1 = FLYER_AREA
     strip = [[sheet.get(x, y) for x in range(96)] for y in range(5)]
@@ -1069,9 +1075,7 @@ def steak_flyer(tiles, lines):
         for x in range(x0, x1):
             sheet.set(x, y, strip[k % 5][(x + 37 * (k // 5)) % 96])
     for text, (top, outline, shadow) in zip(lines, FLYER_LINES):
-        if text not in MASKS:
-            raise ValueError(f"no flyer mask for {text!r}: run tools/make_flyer_masks.py")
-        mask = [[1 if c == "#" else 0 for c in row] for row in MASKS[text].strip("\n").splitlines()]
+        mask = _art_mask("steak_flyer", text)
         if len(mask[0]) > x1 - x0 - 6:
             raise ValueError(f"flyer line too wide: {text!r}")
         art, margin = _flyer_lettering(mask, outline, shadow), 8
@@ -1493,6 +1497,321 @@ def minigame_logo(rom, text):
                 sheet.set(x0 + x, MG_LOGO_ROWS[0] + y, _mg_logo_ink(MG_LOGO_ROWS[0] + y))
 
 
+# ---------------------------------------------------------------------------
+# Mini-game banners.  Each mini-game keeps its own copy of the GAME OVER and
+# GAME START words in its raw OBJ sheet (32 tiles per row): 64x16 pictures,
+# top half at the address and bottom half one sheet row (0x400 bytes) below.
+# 1-pixel strokes (colour 2) outlined in colour 1, letters on rows 5-11.
+
+MG_BANNERS = {   # (GAME OVER, GAME START) per mini-game sheet
+    "roulette": (0x6FCEC8, 0x6FCFC8),
+    "hop": (0x715178, 0x716578),
+    "homerun": (0x72A2E4, 0x72A3E4),
+}
+
+
+def _banner(rom, addr, text):
+    canvas = Canvas(Sheet(rom, addr, 32, 2), [(0, 0, 64, 16, 0, 0)])
+    if canvas.get(1, 4) != 1 or canvas.get(2, 5) != 2:
+        raise ValueError(f"unexpected mini-game banner at {addr:#x}")
+    glyphs = [bitmapfonts.BANNER7[c] if c != " " else None for c in text]
+    width = sum(len(g[0]) if g else 4 for g in glyphs) + 2 * sum(
+        1 for a, b in zip(glyphs, glyphs[1:]) if a and b)
+    if width > 60:
+        raise ValueError(f"mini-game banner too wide: {text!r}")
+    ink = [[0] * 64 for _ in range(16)]
+    x = (64 - width) // 2
+    for k, g in enumerate(glyphs):
+        if g is None:
+            x += 4
+            continue
+        for y, row in enumerate(g):
+            for i, v in enumerate(row):
+                if v:
+                    ink[5 + y][x + i] = 1
+        x += len(g[0]) + (2 if k + 1 < len(glyphs) and glyphs[k + 1] else 0)
+    ring = dilate(ink)
+    for y in range(16):
+        for x in range(64):
+            canvas.set(x, y, 2 if ink[y][x] else 1 if ring[y][x] else 0)
+
+
+def minigame_banners(rom, texts):
+    for over, start in MG_BANNERS.values():
+        _banner(rom, over, texts["game_over"])
+        _banner(rom, start, texts["game_start"])
+
+
+# Home Run Derby calls: the screen is played sideways, so the words are stored
+# rotated a quarter turn in columns 16-31, rows 2-23 of the sheet.  Upright,
+# each call is a 176x24 band (PLAYBALL is the third); letters are 21 rows
+# tall, outlined (2), highlighted on the top/left edges (9), filled (4) and
+# shadowed one pixel down-right (3).
+
+HOMERUN_SHEET = 0x725EE4
+PLAYBALL_BAND = 64
+
+
+def play_ball(rom, text):
+    sheet = Sheet(rom, HOMERUN_SHEET, 32, 24)
+    get = lambda u, v: sheet.get(128 + v, 16 + 175 - u)
+    put = lambda u, v, c: sheet.set(128 + v, 16 + 175 - u, c)
+    if get(9, PLAYBALL_BAND + 1) != 9 or get(9, PLAYBALL_BAND + 3) != 9:
+        raise ValueError("unexpected Home Run Derby PLAYBALL graphic")
+    mask = set()
+    u = 9
+    for ch in text:
+        if ch == " ":
+            u += 7
+            continue
+        g = bitmapfonts.CALLS21[ch]
+        for r, row in enumerate(g):
+            for i, v in enumerate(row):
+                if v:
+                    mask.add((u + i, PLAYBALL_BAND + 1 + r))
+        u += len(g[0]) + 3
+    if u - 3 > 156:
+        raise ValueError(f"PLAYBALL replacement too wide: {text!r}")
+    ring = {(a + dx, b + dy) for a, b in mask for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - mask
+    body = mask | ring
+    shade = {(a + 1, b + 1) for a, b in body} - body
+    for v in range(PLAYBALL_BAND, PLAYBALL_BAND + 24):
+        for uu in range(176):
+            p = (uu, v)
+            c = 0
+            if p in mask:
+                c = 9 if (uu - 1, v) not in mask or (uu, v - 1) not in mask else 4
+            elif p in ring:
+                c = 2
+            elif p in shade:
+                c = 3
+            put(uu, v, c)
+
+
+# ---------------------------------------------------------------------------
+# The Big Board: the progress strip shown in every room starts with a START
+# square (big blue S + small TART) and ends with a GOAL square (big white G +
+# small OAL over a little Wario).  Both are 24x16 pictures made of tiles of
+# the level's foreground tileset (shared by tilesets 3, 4, 5 and 91), listed
+# here as fg tile indices per 8x8 quarter.  Letters cast a one-pixel shadow
+# downwards.
+
+BIG_BOARD_FG = 0x47815C
+BOARD_START = {"tiles": [(0, 0, 609), (0, 8, 628), (8, 0, 610), (16, 0, 611), (8, 8, 629), (16, 8, 630)],
+               "big": (2, 4, 5, 8), "small": (8, 6, 16, 6), "ink": 0xC, "shadow": 0x6, "paper": 0xF}
+BOARD_GOAL = {"tiles": [(0, 0, 612), (8, 0, 613), (16, 0, 614), (0, 8, 631), (8, 8, 632), (16, 8, 633)],
+              "big": (2, 2, 8, 8), "small": (10, 2, 13, 4), "ink": 0xF, "shadow": 0x9, "paper": 0x2}
+BOARD_GLYPHS = bitmapfonts._parse("""
+[I5]
+#####
+#####
+.###.
+.###.
+.###.
+.###.
+#####
+#####
+[M7]
+##...##
+###.###
+#######
+##.#.##
+##...##
+##...##
+##...##
+##...##
+[N]
+#..#
+##.#
+####
+#.##
+#..#
+#..#
+[I]
+###
+.#.
+.#.
+.#.
+.#.
+###
+[C]
+.##
+#..
+#..
+#..
+#..
+.##
+[E4]
+####
+##..
+###.
+####
+[T3]
+###
+.#.
+.#.
+.#.
+[A4]
+.##.
+##.#
+####
+##.#
+""")
+
+
+def _board_square(rom, spec, big, small, small_gap):
+    sheet = Sheet(rom, BIG_BOARD_FG, 32, 21)
+    canvas = Canvas(sheet, [(cx, cy, 8, 8, (t % 32) * 8, (t // 32) * 8) for cx, cy, t in spec["tiles"]])
+    ink, shadow, paper = spec["ink"], spec["shadow"], spec["paper"]
+    areas = []
+    for (x0, y0, w, h), glyphs, gap in ((spec["big"], [big], 0), (spec["small"], small, small_gap)):
+        for y in range(y0, y0 + h + 1):
+            for x in range(x0, x0 + w):
+                if y < y0 + h or canvas.get(x, y) in (shadow, paper):
+                    canvas.set(x, y, paper)
+        width = sum(len(g[0]) for g in glyphs) + gap * (len(glyphs) - 1)
+        if width > w:
+            raise ValueError("Big Board sign text too wide")
+        areas.append((x0 + (w - width) // 2, y0, glyphs, gap))
+    for x, y0, glyphs, gap in areas:
+        for g in glyphs:
+            pts = {(x + i, y0 + r) for r, row in enumerate(g) for i, v in enumerate(row) if v}
+            for a, b in pts:
+                canvas.set(a, b, ink)
+            for a, b in pts:
+                if (a, b + 1) not in pts and canvas.get(a, b + 1) == paper:
+                    canvas.set(a, b + 1, shadow)
+            x += len(g[0]) + gap
+
+
+def big_board_signs(rom, texts):
+    if (texts["board_start"], texts["board_goal"]) != ("INICI", "META"):
+        raise ValueError("only INICI / META are drawn for The Big Board squares")
+    g = BOARD_GLYPHS
+    _board_square(rom, BOARD_START, g["I5"], [g["N"], g["I"], g["C"], g["I"]], 1)
+    _board_square(rom, BOARD_GOAL, g["M7"], [g["E4"], g["T3"], g["A4"]], 1)
+
+
+# Decorations drawn with the same tileset: GET A GOAL starbursts and NEW!
+# badges on the wall of one room, GET! plaques on signposts.  They are edited
+# as pictures of 16x16 blocks (map16 entries of the tileset) and written back
+# tile by tile; a tile shared by several pictures must end up identical in all.
+
+BOARD_MAP16 = 0x56D4BC
+BOARD_BURST_BLOCKS = [[360, 361, 362, 363], [368, 369, 370, 371], [376, 377, 378, 379],
+                      [384, 385, 386, 387], [392, 393, 394, 395]]
+BOARD_BADGE_ROWS = ([264, 265, 266], [267, 268, 269])
+BOARD_PLAQUE_ROW = [309, 310, 311]
+BOARD_BURST_LINES = [22, 38, 46]               # top row of each starburst line
+
+
+class BlockPicture:
+    """Pixels of a grid of map16 blocks, mapped back to (fg tile, x, y)."""
+
+    def __init__(self, rom, grid, fg=BIG_BOARD_FG, map16=BOARD_MAP16):
+        self.rom, self.fg = rom, fg
+        self.w, self.h = 16 * len(grid[0]), 16 * len(grid)
+        self.px = [[0] * self.w for _ in range(self.h)]
+        self.src = [[None] * self.w for _ in range(self.h)]
+        for r, row in enumerate(grid):
+            for c, block in enumerate(row):
+                for q, e in enumerate(struct.unpack_from("<4H", rom, map16 + 8 * block)):
+                    t = (e & 0x3FF) - 0x41
+                    if t < 0:
+                        continue
+                    for y in range(8):
+                        for x in range(8):
+                            X = 16 * c + 8 * (q % 2) + (7 - x if e & 0x400 else x)
+                            Y = 16 * r + 8 * (q // 2) + (7 - y if e & 0x800 else y)
+                            a = fg + 32 * t + 4 * y + x // 2
+                            self.px[Y][X] = (rom[a] >> (4 * (x & 1))) & 15
+                            self.src[Y][X] = (t, x, y)
+
+    def commit(self, writes):
+        for y in range(self.h):
+            for x in range(self.w):
+                if self.src[y][x] is None:
+                    continue
+                if writes.setdefault(self.src[y][x], self.px[y][x]) != self.px[y][x]:
+                    raise ValueError(f"shared tile {self.src[y][x][0]} would need two different drawings")
+
+
+def _apply_tile_writes(rom, fg, writes):
+    for (t, x, y), v in writes.items():
+        a = fg + 32 * t + 4 * y + x // 2
+        rom[a] = (rom[a] & 0x0F) | (v << 4) if x & 1 else (rom[a] & 0xF0) | v
+
+
+def _ink_box(pic, ink, rows):
+    pts = [(x, y) for y in rows for x in range(pic.w) if pic.px[y][x] in ink]
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    return min(xs), max(xs), min(ys), max(ys)
+
+
+def _place(pic, glyphs, x0, y0, gap, ink, shadow=None, under=None):
+    x = x0
+    for g in glyphs:
+        pts = {(x + i, y0 + r) for r, row in enumerate(g) for i, v in enumerate(row) if v}
+        for a, b in pts:
+            pic.px[b][a] = ink
+        if shadow is not None:
+            for a, b in pts:
+                if (a + 1, b) not in pts and pic.px[b][a + 1] == under:
+                    pic.px[b][a + 1] = shadow
+        x += len(g[0]) + gap
+
+
+def big_board_decor(rom, texts):
+    writes = {}
+    # starbursts: yellow letters (2) outlined in orange (8), shadowed (4) on salmon (3)
+    burst = BlockPicture(rom, BOARD_BURST_BLOCKS)
+    x0, x1, y0, y1 = _ink_box(burst, (2, 8), range(16, 64))
+    for y in range(y0 - 1, y1 + 2):
+        for x in range(x0 - 1, x1 + 2):
+            if burst.px[y][x] in (2, 8, 4, 0xA):
+                burst.px[y][x] = 3
+    cx = (x0 + x1 + 1) // 2
+    for text, top in zip(texts["board_burst"], BOARD_BURST_LINES):
+        m = _art_mask("board_burst", text)
+        left = cx - len(m[0]) // 2
+        ink = {(left + x, top + y) for y, row in enumerate(m) for x, v in enumerate(row) if v}
+        ring = {(a + dx, b + dy) for a, b in ink for dx in (-1, 0, 1) for dy in (-1, 0, 1)} - ink
+        shade = {(a + 1, b + 1) for a, b in ink | ring} - ink - ring
+        for (a, b), c in [(p, 4) for p in shade] + [(p, 8) for p in ring] + [(p, 2) for p in ink]:
+            if burst.px[b][a] not in (2, 3, 4, 8) and c != 4:
+                raise ValueError(f"starburst line {text!r} leaves the starburst at {(a, b)}")
+            if c != 4 or burst.px[b][a] == 3:
+                burst.px[b][a] = c
+    burst.commit(writes)
+    # NEW! badges: yellow letters (2) on salmon (3), rows 4-10 of a block row
+    for row in BOARD_BADGE_ROWS:
+        pic = BlockPicture(rom, [row])
+        x0, x1, y0, y1 = _ink_box(pic, (2,), range(2, 14))
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if pic.px[y][x] == 2:
+                    pic.px[y][x] = 3
+        glyphs = [bitmapfonts.BADGE7[c] for c in texts["board_new"]]
+        width = sum(len(g[0]) for g in glyphs) + len(glyphs) - 1
+        if width > x1 - x0 + 1:
+            raise ValueError("NEW! badge text too wide")
+        _place(pic, glyphs, x0 + (x1 - x0 + 1 - width) // 2, y0, 1, 2)
+        pic.commit(writes)
+    # GET! plaques: dark red letters (2) with an orange shadow (C) on white (F)
+    pic = BlockPicture(rom, [BOARD_PLAQUE_ROW])
+    x0, x1, y0, y1 = _ink_box(pic, (2, 0xC), range(8, 16))
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            pic.px[y][x] = 0xF
+    glyphs = [bitmapfonts.PLAQUE5[c] for c in texts["board_get"]]
+    width = sum(len(g[0]) for g in glyphs) + len(glyphs)
+    if width > x1 - x0 + 2:
+        raise ValueError("GET! plaque text too wide")
+    _place(pic, glyphs, x0 + (x1 - x0 + 1 - width) // 2, y0, 1, 2, shadow=0xC, under=0xF)
+    pic.commit(writes)
+    _apply_tile_writes(rom, BIG_BOARD_FG, writes)
+
+
 def apply(rom, base, texts):
     alloc = romspace.Allocator(rom)
     pause_dialogs(rom, texts)
@@ -1511,3 +1830,7 @@ def apply(rom, base, texts):
     shop_sign(rom, texts["shop_sign"])
     the_end(rom, base, alloc, texts["the_end"], push_tiles)
     minigame_logo(rom, texts["minigame_logo"])
+    minigame_banners(rom, texts)
+    play_ball(rom, texts["play_ball"])
+    big_board_signs(rom, texts)
+    big_board_decor(rom, texts)

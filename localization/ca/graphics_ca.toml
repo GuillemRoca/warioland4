@@ -49,7 +49,7 @@ intro_subtitle = ["PIRÀMIDE LLEGENDÀRIA TROBADA", "DINS LA JUNGLA!!"]
 # "STEAKS! EAT AS MUCH AS" / "YOU CAN!!"
 steak_subtitle = ["BISTECS! MENJA'N", "A DOJO!!"]
 # Lettering painted on the flyer itself (STEAKS! / Eat as much as you can!!).
-# Pre-rasterised: after changing it, run tools/make_flyer_masks.py with the new lines.
+# Pre-rasterised: after changing it, run tools/make_masks.py.
 steak_flyer = ["BISTECS!", "Menja'n a dojo!!"]
 # Newspaper headline: "PYRAMID DISCOVERED" (letters available: P R A M I D E O S C, plus T B À)
 intro_headline = "PIRÀMIDE TROBADA"
@@ -73,6 +73,24 @@ the_end = "FI"
 
 # Mini-game shop preview logo: "mini" stays, "Game" is redrawn (letters J o c only)
 minigame_logo = "Joc"
+
+# Mini-game banners (all three mini-games; 1-pixel font, max 60px)
+game_over = "FI DEL JOC"     # GAME OVER
+game_start = "COMENÇA!"      # GAME START
+# Home Run Derby umpire call PLAYBALL (HOMERUN, OUT, FOUL and STRIKE stay:
+# they are the baseball terms also used in Catalan)
+play_ball = "A JUGAR!"
+
+# The Big Board: first and last squares of the progress strip (START / GOAL);
+# a big first letter plus small letters, only these words are drawn
+board_start = "INICI"
+board_goal = "META"
+# Decorations of a Big Board room (tileset 91): GET A GOAL starbursts
+# (three lines, pre-rasterised: run tools/make_masks.py after changing them),
+# NEW! badges (max 24px) and the GET! signpost plaques (max 29px)
+board_burst = ["CAP", "A LA", "META"]
+board_new = "NOU!"
+board_get = "TEU!"
 
 # Credits headers (rows of the credits tilemap) and the closing copyright notice.
 # Staff names and SUPER MARIO CLUB are left unchanged.

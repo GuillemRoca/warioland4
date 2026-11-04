@@ -38,20 +38,28 @@ python3 localization/ca/apply_patch.py baserom_us.gba warioland4_ca.gba
   - botigues, Sala de So i minijocs (SURT, MENÚ, REGAL, 1 JOC, MÀX, MIRA);
   - capçaleres dels crèdits, amb una pàgina final nova: "TRADUCCIÓ AL
     CATALÀ — GUILLEM ROCA CASTANY";
-  - final del joc ("Gràcies, WARIO..." i "UNS DIES DESPRÉS…").
+  - final del joc ("Gràcies, WARIO...", "UNS DIES DESPRÉS…", el cartell
+    "BISTECS! / Menja'n a dojo!!" i la pantalla final "FI" amb "PREM START");
+  - combats contra els caps: "TEMPS ESGOTAT" quan s'acaba el temps i el
+    rètol "BOTIGA" del passadís dels caps;
+  - minijocs: "FI DEL JOC" i "COMENÇA!" als tres minijocs, "A JUGAR!" als
+    Home Runs de Wario i el logotip "mini Joc" de la previsualització;
+  - El Gran Tauler: caselles "INICI" i "META" del tauler, rètols "TEU!",
+    insígnies "NOU!" i les estrelles "CAP A LA META".
 - **Glossari** de termes: [`GLOSSARI.md`](GLOSSARI.md).
 
 Es mantenen en l'original els noms propis (Wario, Nintendo, el personal dels
 crèdits), la lletra del karaoke (japonès romanitzat), els termes de beisbol
-(STRIKE) i "START" com a nom de botó.
-
-**Pendent:** continuen en anglès el gràfic "TIME UP" (quan s'acaba el temps
-d'un cap), les lletres dibuixades del cartell "STEAKS! $10" (el subtítol que
-l'acompanya sí que està traduït) i el petit logotip "mini GAME" de la
-previsualització de la botiga de minijocs. També es mantenen "Nintendo
-Presents" i "© 2001 Nintendo". Alguns gràfics sense ús a la versió
+(STRIKE, OUT, FOUL, HOMERUN), "START" com a nom de botó, les onomatopeies
+dibuixades de la Zona de Pinball (VROOM!, VRM, SCREEEEE), el preu "$10" del
+cartell de bistecs i les portades dels CD de la Sala de So. També es mantenen
+"Nintendo Presents" i "© 2001 Nintendo". Alguns gràfics sense ús a la versió
 USA/Europa (selector d'idioma ENGLISH/JAPANESE, "Start / Cancel", "Press
 PUSH") no s'han tocat.
+
+La traducció s'ha revisat jugant amb una partida desada al 100 %: passadissos,
+nivells, caps (incloent-hi el temps esgotat), botigues, minijocs, Sala de So,
+final i crèdits.
 
 ## Regenerar el pedaç
 
@@ -78,6 +86,8 @@ exactament la ROM traduïda.
 | `lib/font.py` | Codificació de text i lletres accentuades de la font 8×16 |
 | `lib/graphics.py` | Redibuixat dels gràfics amb text |
 | `lib/bitmapfonts.py` | Fonts petites en ASCII-art calcades de l'estil original |
+| `lib/art_masks.py` | Lletres pre-rasteritzades (cartell de bistecs, estrelles del Gran Tauler) |
+| `tools/make_masks.py` | Regenera `art_masks.py` (cal Pillow i la font Inter) |
 | `lib/lz77.py`, `lib/rle.py` | Compressió LZ77 (BIOS) i RLE de tilemaps de WL4 |
 | `lib/bps.py` | Creació i aplicació de pedaços BPS |
 | `lib/romspace.py` | Espai lliure de la ROM i reapuntament de punters |
@@ -95,6 +105,9 @@ exactament la ROM traduïda.
   drets d'autor): el codi la saltava quan `gLanguage = 0`. El pedaç canvia
   aquesta comprovació (`0x94AEC`) perquè es mostri, i hi posa el crèdit de la
   traducció en lloc de la nota.
+- Els rètols dels nivells (botiga dels caps, El Gran Tauler) formen part dels
+  tilesets: es redibuixen a partir dels blocs 16×16 que els fan servir i es
+  comprova que cap tile compartit no quedi dibuixat de dues maneres.
 - Els diàlegs es dibuixen amb la mateixa font 8×16 i l'espaiat proporcional
   dels originals. Els gràfics comprimits (LZ77/RLE) es recomprimeixen; si no
   caben al lloc original, es mouen a l'espai lliure del final de la ROM i se'n
